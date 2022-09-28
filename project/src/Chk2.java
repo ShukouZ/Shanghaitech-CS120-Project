@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Chk2 {
 
@@ -9,7 +10,10 @@ public class Chk2 {
 
         SinWave wave = new SinWave(0, 1000, Config.PHY_TX_SAMPLING_RATE);
 
-        ArrayList<Float> track = wave.sample(5 * Config.PHY_TX_SAMPLING_RATE);
+//        ArrayList<Float> track = wave.sample(5 * Config.PHY_TX_SAMPLING_RATE);
+
+        ArrayList<Float> track = new ArrayList<>(Arrays.asList(Config.preamble));
+
 
         r.play(track);
 
