@@ -31,6 +31,10 @@ public class test {
 
         // init the frame
         ArrayList<Float> track1 = new ArrayList<>();
+        // add zero buffer
+        for (int j = 0; j < 10000; j++){
+            track1.add(0.0f);
+        }
         String filename = "src/INPUT.txt";
         ArrayList<Float> frame_data = readTxt(filename);
 
@@ -72,7 +76,7 @@ public class test {
 
         r.start();
         try {
-            Thread.sleep(5000);  // ms
+            Thread.sleep(15000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
@@ -98,7 +102,7 @@ public class test {
 
         ArrayList<Integer> start_indexes = new ArrayList<>();
 
-        float sum;
+        float sum; // temp
 
 
         for(int i = 0; i < recorded.size(); i++){
@@ -115,7 +119,7 @@ public class test {
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.002f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.005f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
@@ -134,8 +138,50 @@ public class test {
             System.out.println(id);
         }
 
+        List<Float> data_signal;
+        float[] data_signal_remove_carrier = new float[48 * 100];
+        ArrayList<Integer> decoded_data = new ArrayList<>(10000);
 
-//
+        // decode
+        for (int id : start_indexes){
+            // find data signal
+            data_signal = recorded.subList(id + 1, id + 48 * 100 + 1);
+
+            // remove carrier
+            for (int i = 0; i < 48 * 100; i++){
+                data_signal_remove_carrier[i] = data_signal.get(i) * carrier.get(i);
+            }
+
+            for (int i = 0; i < 100; i++){
+                sum = 0;
+                for (int j = 10 + i * 48; j < 30 + i * 48; j++){
+                    sum += data_signal_remove_carrier[j];
+                }
+
+                if (sum > 0){
+                    decoded_data.add(1);
+                }
+                else{
+                    decoded_data.add(0);
+                }
+            }
+
+
+
+        }
+
+        System.out.println(decoded_data.size());
+
+        try {
+            FileWriter writer = new FileWriter("src/OUTPUT.txt");
+            for (int i = 0; i < decoded_data.size(); i++) {
+                writer.write(String.valueOf(decoded_data.get(i)));
+            }
+            writer.close();
+        }catch (Exception e){
+            System.out.println("Cannot read file.");
+        }
+
 //        try {
 //            PrintWriter track_writer = new PrintWriter("track.txt");
 //            for (float p : track1){
