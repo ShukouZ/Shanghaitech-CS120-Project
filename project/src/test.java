@@ -32,7 +32,7 @@ public class test {
         // init the frame
         ArrayList<Float> track1 = new ArrayList<>();
         // add zero buffer
-        for (int j = 0; j < 10000; j++){
+        for (int j = 0; j < 48000; j++){
             track1.add(0.0f);
         }
         String filename = "src/INPUT.txt";
@@ -55,9 +55,9 @@ public class test {
             List<Float> frame = frame_data.subList(i*100, i*100+100);
             float[] frame_wave = new float[48*100];
 
-            for(int j=0; j<100-1; ++j){
+            for(int j=0; j<100; ++j){
                 for(int k=0; k<48; ++k){
-                    frame_wave[j*48+k] = carrier.get(j*48+k) * (frame.get(j+1)*2-1); //  baud rate 48/48000 = 1000bps
+                    frame_wave[j*48+k] = carrier.get(j*48+k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
             // add frame to track
@@ -119,7 +119,7 @@ public class test {
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.005f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.01f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
