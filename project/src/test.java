@@ -95,7 +95,7 @@ public class test {
 
         Arrays.fill(syncPower_debug, 0);
         Arrays.fill(power_debug, 0);
-        for(int i=0; i<440; ++i){
+        for(int i=0; i<480; ++i){
             syncFIFO_list.add(0.0f);
         }
         syncFIFO_list.addAll(recorded);
@@ -110,16 +110,16 @@ public class test {
             power =  power*(1.0f - 1.0f / 64.0f) + (float)Math.pow(current_sample, 2.0f) / 64.0f;
             power_debug[i] = power;
 
-            var syncFIFO = syncFIFO_list.subList(i, i + 440);
+            var syncFIFO = syncFIFO_list.subList(i, i + 480);
 
             sum = 0;
-            for (int j = 0; j < 440; j++){
+            for (int j = 0; j < 480; j++){
                 sum += syncFIFO.get(j) * Config.preamble[j];
             }
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.01f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.015f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
