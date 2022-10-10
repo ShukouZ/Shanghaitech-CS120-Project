@@ -1,18 +1,19 @@
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.*;
 
 public class test {
-    public static ArrayList<Float> readTxt(String filePath) {
-        ArrayList<Float> input_list =  new ArrayList<Float>();
+    public static ArrayList<Integer> readTxt(String filePath) {
+        ArrayList<Integer> input_list =  new ArrayList<>();
         try {
             File file = new File(filePath);
             if(file.isFile() && file.exists()) {
-                InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "utf-8");
+                InputStreamReader isr = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
                 BufferedReader br = new BufferedReader(isr);
                 String lineTxt = br.readLine();
                 char[] ar = lineTxt.toCharArray();
                 for (char c : ar) {
-                    input_list.add((float) Integer.parseInt(String.valueOf(c)));
+                    input_list.add(Integer.parseInt(String.valueOf(c)));
                 }
                 br.close();
             } else {
@@ -36,7 +37,7 @@ public class test {
             track1.add(0.0f);
         }
         String filename = "src/INPUT.txt";
-        ArrayList<Float> frame_data = readTxt(filename);
+        ArrayList<Integer> frame_data = readTxt(filename);
 
 //        ArrayList<Float> frame_data = new ArrayList<Float>();
 //        for(int i=0; i<5000; ++i){
@@ -63,7 +64,7 @@ public class test {
             track1.addAll(Arrays.asList(Config.preamble));
 
             // modulation
-            List<Float> frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
+            List<Integer> frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
             float[] frame_wave = new float[48*(frame_size+correction_size)];
 
             //// calculate correction code: using 1's sum
@@ -75,12 +76,12 @@ public class test {
             char[] sum_char = sum_string.toCharArray();
             int zero_buffer_num = correction_size-sum_char.length;
             for (int j=sum_char.length-1; j>=0; --j) {
-                frame.add((float)Integer.parseInt((String.valueOf(sum_char[j]))));
-                System.out.println((float)Integer.parseInt((String.valueOf(sum_char[j]))));
+                frame.add(Integer.parseInt((String.valueOf(sum_char[j]))));
+                System.out.println(Integer.parseInt((String.valueOf(sum_char[j]))));
             }
             for(int j=0; j<zero_buffer_num; ++j) {
-                frame.add(0.0f);
-                System.out.println(0.0f);
+                frame.add(0);
+                System.out.println(0);
             }
             //// end of correction code calculation
 
@@ -90,8 +91,7 @@ public class test {
                 }
             }
             // add frame to track
-            for(int j=0; j<frame_wave.length; ++j)
-                track1.add(frame_wave[j]);
+            for (float v : frame_wave) track1.add(v);
 
 
 
