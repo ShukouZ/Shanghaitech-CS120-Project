@@ -36,19 +36,20 @@ public class test {
             track1.add(0.0f);
         }
         String filename = "src/INPUT.txt";
-//        ArrayList<Float> frame_data = readTxt(filename);
+        ArrayList<Float> frame_data = readTxt(filename);
 
-        ArrayList<Float> frame_data = new ArrayList<Float>();
-        for(int i=0; i<5000; ++i){
-            frame_data.add(1.0f);
-            frame_data.add(0.0f);
-        }
+//        ArrayList<Float> frame_data = new ArrayList<Float>();
+//        for(int i=0; i<5000; ++i){
+//            frame_data.add(1.0f);
+//            frame_data.add(0.0f);
+//        }
 
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
         ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
 
         // compute frame buffer size
+        int correction_size = Config.CHECK_SIZE;
         int frame_size = Config.FRAME_SIZE;
         int frame_num = (int) 10000 / frame_size;
 
@@ -63,9 +64,27 @@ public class test {
 
             // modulation
             List<Float> frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
-            float[] frame_wave = new float[48*frame_size];
+            float[] frame_wave = new float[48*(frame_size+correction_size)];
 
-            for(int j=0; j<frame_size; ++j){
+            //// calculate correction code: using 1's sum
+            int sum = 0;
+            for(int j=0; j<frame_size; ++j)
+                sum += (int)Math.floor(frame.get(j));
+            System.out.println("................... "+sum);
+            String sum_string = Integer.toString(sum, 2);
+            char[] sum_char = sum_string.toCharArray();
+            int zero_buffer_num = correction_size-sum_char.length;
+            for (int j=sum_char.length-1; j>=0; --j) {
+                frame.add((float)Integer.parseInt((String.valueOf(sum_char[j]))));
+                System.out.println((float)Integer.parseInt((String.valueOf(sum_char[j]))));
+            }
+            for(int j=0; j<zero_buffer_num; ++j) {
+                frame.add(0.0f);
+                System.out.println(0.0f);
+            }
+            //// end of correction code calculation
+
+            for(int j=0; j<frame_size+correction_size; ++j){
                 for(int k=0; k<48; ++k){
                     frame_wave[j*48+k] = carrier.get(j*48+k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
                 }
@@ -74,15 +93,7 @@ public class test {
             for(int j=0; j<frame_wave.length; ++j)
                 track1.add(frame_wave[j]);
 
-            // calculate correction code: using 1's sum
-            int sum = 0;
-            for(int j=0; j<frame_size; ++j)
-                sum += (int)Math.floor(frame.get(i));
-            String sum_string = Integer.toString(sum, 2);
-            char[] sum_char = sum_string.toCharArray();
-            for (char s : sum_char) {
-                track1.add(Integer.parseInt(String.valueOf(s)));
-            }
+
 
             // add zero buffer2
             for (int j = 0; j < 100; j++){
