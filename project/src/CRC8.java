@@ -38,7 +38,7 @@ public class CRC8 {
 
     public static int CRC_SIZE = 8;
 
-    public static List<Float> get_crc8(List<Float> data){
+    public static List<Integer> get_crc8(List<Integer> data){
         char fcs = 0xff;
         for(int i=0; i <data.size(); ++i){
             fcs = CRC_TABLE[fcs ^ (char)(int)Math.floor(data.get(i))];
@@ -46,21 +46,21 @@ public class CRC8 {
         String crc_code = Integer.toString((int)(char)(0xff-fcs),2);
         char[] sum_char = crc_code.toCharArray();
         int zero_buffer_num = CRC_SIZE-sum_char.length;
-        List<Float> res = new ArrayList<>();
+        List<Integer> res = new ArrayList<>();
         for(int i=0; i<zero_buffer_num; ++i){
-            res.add(0.0f);
+            res.add(0);
         }
         for(char c: sum_char){
-            res.add((float)Integer.parseInt((String.valueOf(c))));
+            res.add(Integer.parseInt((String.valueOf(c))));
         }
         return res;
     }
 
     public static void main(final String[] args){
-        List<Float> a = new ArrayList<>();
-        a.add(1.0f);
-        a.add(0.0f);
-        a.add(1.0f);
+        List<Integer> a = new ArrayList<>();
+        a.add(1);
+        a.add(0);
+        a.add(1);
         System.out.println(get_crc8(a));
     }
 }
