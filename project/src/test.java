@@ -42,8 +42,12 @@ public class test {
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
         ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
 
+        // compute frame buffer size
+        int frame_size = Config.FRAME_SIZE;
+        int frame_num = (int) 10000 / frame_size;
+
         // add preamble and frame, each frame has 100 bits
-        for(int i=0; i<100; ++i){
+        for(int i=0; i<frame_num; ++i){
             // add zero buffer1
             for (int j = 0; j < 100; j++){
                 track1.add(0.0f);
@@ -52,10 +56,10 @@ public class test {
             track1.addAll(Arrays.asList(Config.preamble));
 
             // modulation
-            List<Float> frame = frame_data.subList(i*100, i*100+100);
-            float[] frame_wave = new float[48*100];
+            List<Float> frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
+            float[] frame_wave = new float[48*frame_size];
 
-            for(int j=0; j<100; ++j){
+            for(int j=0; j<frame_size; ++j){
                 for(int k=0; k<48; ++k){
                     frame_wave[j*48+k] = carrier.get(j*48+k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
                 }
@@ -92,10 +96,11 @@ public class test {
         float[] power_debug = new float[recorded.size()];
         float syncPower_localMax = 0;
         ArrayList<Float> syncFIFO_list = new ArrayList<Float>();
+        int preamble_size = Config.preamble.length;
 
         Arrays.fill(syncPower_debug, 0);
         Arrays.fill(power_debug, 0);
-        for(int i=0; i<480; ++i){
+        for(int i=0; i<preamble_size; ++i){
             syncFIFO_list.add(0.0f);
         }
         syncFIFO_list.addAll(recorded);
@@ -110,10 +115,10 @@ public class test {
             power =  power*(1.0f - 1.0f / 64.0f) + (float)Math.pow(current_sample, 2.0f) / 64.0f;
             power_debug[i] = power;
 
-            var syncFIFO = syncFIFO_list.subList(i, i + 480);
+            var syncFIFO = syncFIFO_list.subList(i, i + preamble_size);
 
             sum = 0;
-            for (int j = 0; j < 480; j++){
+            for (int j = 0; j < preamble_size; j++){
                 sum += syncFIFO.get(j) * Config.preamble[j];
             }
 
@@ -139,20 +144,20 @@ public class test {
         }
 
         List<Float> data_signal;
-        float[] data_signal_remove_carrier = new float[48 * 100];
+        float[] data_signal_remove_carrier = new float[48 * frame_size];
         ArrayList<Integer> decoded_data = new ArrayList<>(10000);
 
         // decode
         for (int id : start_indexes){
             // find data signal
-            data_signal = recorded.subList(id + 1, id + 48 * 100 + 1);
+            data_signal = recorded.subList(id + 1, id + 1 + 48 * frame_size);
 
             // remove carrier
-            for (int i = 0; i < 48 * 100; i++){
+            for (int i = 0; i < 48 * frame_size; i++){
                 data_signal_remove_carrier[i] = data_signal.get(i) * carrier.get(i);
             }
 
-            for (int i = 0; i < 100; i++){
+            for (int i = 0; i < frame_size; i++){
                 sum = 0;
                 for (int j = 10 + i * 48; j < 30 + i * 48; j++){
                     sum += data_signal_remove_carrier[j];
