@@ -1,7 +1,5 @@
+import java.util.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Receiver {
     public static void main(final String[] args) {
@@ -12,14 +10,14 @@ public class Receiver {
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
         ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
-
         r.start();
         try {
-            Thread.sleep(15000);  // ms
+            Thread.sleep(20000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
         r.stop();
+
 
         ArrayList<Float> recorded = r.getRecorded();
 
@@ -30,10 +28,11 @@ public class Receiver {
         float[] power_debug = new float[recorded.size()];
         float syncPower_localMax = 0;
         ArrayList<Float> syncFIFO_list = new ArrayList<Float>();
+        int preamble_size = Config.preamble.length;
 
         Arrays.fill(syncPower_debug, 0);
         Arrays.fill(power_debug, 0);
-        for(int i=0; i<480; ++i){
+        for(int i=0; i<preamble_size; ++i){
             syncFIFO_list.add(0.0f);
         }
         syncFIFO_list.addAll(recorded);
@@ -48,16 +47,16 @@ public class Receiver {
             power =  power*(1.0f - 1.0f / 64.0f) + (float)Math.pow(current_sample, 2.0f) / 64.0f;
             power_debug[i] = power;
 
-            var syncFIFO = syncFIFO_list.subList(i, i + 480);
+            var syncFIFO = syncFIFO_list.subList(i, i + preamble_size);
 
             sum = 0;
-            for (int j = 0; j < 480; j++){
+            for (int j = 0; j < preamble_size; j++){
                 sum += syncFIFO.get(j) * Config.preamble[j];
             }
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.015f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.1f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
@@ -77,34 +76,69 @@ public class Receiver {
         }
 
         List<Float> data_signal;
-        float[] data_signal_remove_carrier = new float[48 * 100];
-        ArrayList<Integer> decoded_data = new ArrayList<>(10000);
+        float[] data_signal_remove_carrier = new float[48 * (Config.FRAME_SIZE + Config.CHECK_SIZE)];
+
+        ArrayList<Integer> decoded_data = new ArrayList<>();
+        List<Integer> decoded_frame_data = new ArrayList<>(100);
+        List<Integer> decoded_crc8 = new ArrayList<>(8);
 
         // decode
         for (int id : start_indexes){
-            // find data signal
-            data_signal = recorded.subList(id + 1, id + 48 * 100 + 1);
+            for(int offset = -4; offset <= 1; offset++){
+                decoded_frame_data.clear();
+                decoded_crc8.clear();
+                // find data signal
+                data_signal = recorded.subList(id + offset, id + offset + 48 * (Config.FRAME_SIZE + Config.CHECK_SIZE));
 
-            // remove carrier
-            for (int i = 0; i < 48 * 100; i++){
-                data_signal_remove_carrier[i] = data_signal.get(i) * carrier.get(i);
+                // remove carrier
+                for (int i = 0; i < 48 * (Config.FRAME_SIZE + Config.CHECK_SIZE); i++){
+                    data_signal_remove_carrier[i] = data_signal.get(i) * carrier.get(i);
+                }
+
+                for (int i = 0; i < Config.FRAME_SIZE; i++){
+                    sum = 0;
+                    for (int j = 10 + i * 48; j < 30 + i * 48; j++){
+                        sum += data_signal_remove_carrier[j];
+                    }
+
+                    if (sum > 0){
+                        decoded_frame_data.add(1);
+                    }
+                    else{
+                        decoded_frame_data.add(0);
+                    }
+                }
+
+                for (int i = Config.FRAME_SIZE; i < Config.FRAME_SIZE + Config.CHECK_SIZE; i++){
+                    sum = 0;
+                    for (int j = 10 + i * 48; j < 30 + i * 48; j++){
+                        sum += data_signal_remove_carrier[j];
+                    }
+
+                    if (sum > 0){
+                        decoded_crc8.add(1);
+                    }
+                    else{
+                        decoded_crc8.add(0);
+                    }
+                }
+                List<Integer> data_crc8 = CRC8.get_crc8(decoded_frame_data);
+
+                boolean correct = true;
+                for (int i = 0; i < 8; i++){
+                    if(!Objects.equals(data_crc8.get(i), decoded_crc8.get(i))){
+                        correct = false;
+                        break;
+                    }
+                }
+                if(correct){
+                    System.out.println("Correct:" + id);
+                    break;
+                }
             }
 
-            for (int i = 0; i < 100; i++){
-                sum = 0;
-                for (int j = 10 + i * 48; j < 30 + i * 48; j++){
-                    sum += data_signal_remove_carrier[j];
-                }
-
-                if (sum > 0){
-                    decoded_data.add(1);
-                }
-                else{
-                    decoded_data.add(0);
-                }
-            }
-
-
+            // output
+            decoded_data.addAll(decoded_frame_data);
 
         }
 
@@ -112,8 +146,8 @@ public class Receiver {
 
         try {
             FileWriter writer = new FileWriter("src/OUTPUT.txt");
-            for (int i = 0; i < decoded_data.size(); i++) {
-                writer.write(String.valueOf(decoded_data.get(i)));
+            for (Integer decoded_datum : decoded_data) {
+                writer.write(String.valueOf(decoded_datum));
             }
             writer.close();
         }catch (Exception e){
