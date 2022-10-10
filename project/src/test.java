@@ -36,7 +36,13 @@ public class test {
             track1.add(0.0f);
         }
         String filename = "src/INPUT.txt";
-        ArrayList<Float> frame_data = readTxt(filename);
+//        ArrayList<Float> frame_data = readTxt(filename);
+
+        ArrayList<Float> frame_data = new ArrayList<Float>();
+        for(int i=0; i<5000; ++i){
+            frame_data.add(1.0f);
+            frame_data.add(0.0f);
+        }
 
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
@@ -67,6 +73,16 @@ public class test {
             // add frame to track
             for(int j=0; j<frame_wave.length; ++j)
                 track1.add(frame_wave[j]);
+
+            // calculate correction code: using 1's sum
+            int sum = 0;
+            for(int j=0; j<frame_size; ++j)
+                sum += (int)Math.floor(frame.get(i));
+            String sum_string = Integer.toString(sum, 2);
+            char[] sum_char = sum_string.toCharArray();
+            for (char s : sum_char) {
+                track1.add(Integer.parseInt(String.valueOf(s)));
+            }
 
             // add zero buffer2
             for (int j = 0; j < 100; j++){
