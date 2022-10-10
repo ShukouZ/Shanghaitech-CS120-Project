@@ -40,10 +40,10 @@ public class CRC8 {
 
     public static List<Integer> get_crc8(List<Integer> data){
         char fcs = 0xff;
-        for(int i=0; i <data.size(); ++i){
-            fcs = CRC_TABLE[fcs ^ (char)(int)Math.floor(data.get(i))];
+        for (Integer datum : data) {
+            fcs = CRC_TABLE[fcs ^ (char) (int) datum];
         }
-        String crc_code = Integer.toString((int)(char)(0xff-fcs),2);
+        String crc_code = Integer.toString((char)(0xff-fcs),2);
         char[] sum_char = crc_code.toCharArray();
         int zero_buffer_num = CRC_SIZE-sum_char.length;
         List<Integer> res = new ArrayList<>();
