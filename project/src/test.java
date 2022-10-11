@@ -30,6 +30,7 @@ public class test {
         final AudioHw r = new AudioHw();
         r.init();
 
+//////////////////////////////////////////////////////////// TRANSMITTER ////////////////////////////////////////////////////////////
         // init the frame
         ArrayList<Float> track1 = new ArrayList<>();
         // add zero buffer
@@ -39,25 +40,20 @@ public class test {
         String filename = "src/INPUT.txt";
         ArrayList<Integer> frame_data = readTxt(filename);
 
-//        ArrayList<Float> frame_data = new ArrayList<Float>();
-//        for(int i=0; i<5000; ++i){
-//            frame_data.add(1.0f);
-//            frame_data.add(0.0f);
-//        }
-
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
         ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
 
         // compute frame buffer size
-        int correction_size = Config.CHECK_SIZE;
+        int crc_length = Config.CHECK_SIZE;
         int frame_size = Config.FRAME_SIZE;
-        int frame_num = (int) 10000 / frame_size;
+        int frame_num = 10000 / frame_size;
+        int zero_buffer_length = 100;
 
         // add preamble and frame, each frame has 100 bits
         for(int i=0; i<frame_num; ++i){
             // add zero buffer1
-            for (int j = 0; j < 100; j++){
+            for (int j = 0; j < zero_buffer_length; j++){
                 track1.add(0.0f);
             }
             // add preamble
@@ -65,43 +61,28 @@ public class test {
 
             // modulation
             List<Integer> frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
-            float[] frame_wave = new float[48*(frame_size+correction_size)];
+            float[] frame_wave = new float[48*(frame_size+crc_length)];
 
-            //// calculate correction code: using 1's sum
-            int sum = 0;
-            for(int j=0; j<frame_size; ++j)
-                sum += (int)Math.floor(frame.get(j));
-            System.out.println("................... "+sum);
-            String sum_string = Integer.toString(sum, 2);
-            char[] sum_char = sum_string.toCharArray();
-            int zero_buffer_num = correction_size-sum_char.length;
-            for (int j=sum_char.length-1; j>=0; --j) {
-                frame.add(Integer.parseInt((String.valueOf(sum_char[j]))));
-                System.out.println(Integer.parseInt((String.valueOf(sum_char[j]))));
-            }
-            for(int j=0; j<zero_buffer_num; ++j) {
-                frame.add(0);
-                System.out.println(0);
-            }
-            //// end of correction code calculation
+            //// calculate crc8
+            List<Integer> crc_code = CRC8.get_crc8(frame);
+            frame.addAll(crc_code);
+            //// end of crc code calculation
 
-            for(int j=0; j<frame_size+correction_size; ++j){
+            for(int j=0; j<frame.size(); ++j){
                 for(int k=0; k<48; ++k){
                     frame_wave[j*48+k] = carrier.get(j*48+k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
             // add frame to track
-            for (float v : frame_wave) track1.add(v);
-
-
+            for (float v : frame_wave)
+                track1.add(v);
 
             // add zero buffer2
-            for (int j = 0; j < 100; j++){
+            for (int j = 0; j < zero_buffer_length; j++){
                 track1.add(0.0f);
             }
         }
-        System.out.println("Size of track:");
-        System.out.println(track1.size());
+        System.out.println("Size of track:"+track1.size());
         r.play(track1);
 
 
@@ -113,38 +94,35 @@ public class test {
         }
         r.stop();
 
-
+//////////////////////////////////////////////////////////// RECEIVER ////////////////////////////////////////////////////////////
         ArrayList<Float> recorded = r.getRecorded();
 
+////////// Task 1: Find all start indexes
         // Initialization
         float power = 0;
         int start_index = 0;
         float[] syncPower_debug = new float[recorded.size()];
-        float[] power_debug = new float[recorded.size()];
         float syncPower_localMax = 0;
-        ArrayList<Float> syncFIFO_list = new ArrayList<Float>();
         int preamble_size = Config.preamble.length;
+        List<Float> syncFIFO = new ArrayList<>();
 
         Arrays.fill(syncPower_debug, 0);
-        Arrays.fill(power_debug, 0);
         for(int i=0; i<preamble_size; ++i){
-            syncFIFO_list.add(0.0f);
+            syncFIFO.add(0.0f);
         }
-        syncFIFO_list.addAll(recorded);
 
-        ArrayList<Integer> start_indexes = new ArrayList<>();
+        List<Integer> start_indexes = new ArrayList<>();
 
         float sum; // temp
-
 
         for(int i = 0; i < recorded.size(); i++){
             float current_sample = recorded.get(i);
             power =  power*(1.0f - 1.0f / 64.0f) + (float)Math.pow(current_sample, 2.0f) / 64.0f;
-            power_debug[i] = power;
 
-            var syncFIFO = syncFIFO_list.subList(i, i + preamble_size);
+            syncFIFO.remove(0);
+            syncFIFO.add(current_sample);
 
-            sum = 0;
+            sum = 0.0f;
             for (int j = 0; j < preamble_size; j++){
                 sum += syncFIFO.get(j) * Config.preamble[j];
             }
@@ -159,8 +137,12 @@ public class test {
                 if(!start_indexes.contains(start_index)){
                     start_indexes.add(start_index);
                 }
-//                start_index = 0;
+                // re init the local variables, prepare for next decode
                 syncPower_localMax = 0.0f;
+                syncFIFO.clear();
+                for(int j=0; j<preamble_size; ++j){
+                    syncFIFO.add(0.0f);
+                }
             }
         }
 
@@ -170,44 +152,56 @@ public class test {
             System.out.println(id);
         }
 
+////////// Task 2: decode all frames
         List<Float> data_signal;
-        float[] data_signal_remove_carrier = new float[48 * frame_size];
+        float[] data_signal_remove_carrier = new float[48 * (frame_size+crc_length)];
         ArrayList<Integer> decoded_data = new ArrayList<>(10000);
 
-        // decode
-        for (int id : start_indexes){
-            // find data signal
-            data_signal = recorded.subList(id + 1, id + 1 + 48 * frame_size);
+        // decode & check crc
+        for (int start_id : start_indexes){
+            // Try index nearby the given id: [id-2, id+2]
+            int[] potential_idx = new int[]{start_id-2, start_id-1, start_id, start_id+1, start_id+2};
+            for(int id: potential_idx) {
+                // find data signal
+                data_signal = recorded.subList(id + 1, id + 1 + 48 * (frame_size + crc_length));
 
-            // remove carrier
-            for (int i = 0; i < 48 * frame_size; i++){
-                data_signal_remove_carrier[i] = data_signal.get(i) * carrier.get(i);
+                // remove carrier
+                for (int i = 0; i < 48 * frame_size; i++) {
+                    data_signal_remove_carrier[i] = data_signal.get(i) * carrier.get(i);
+                }
+
+                // decode
+                for (int i = 0; i < frame_size; i++) {
+                    sum = 0.0f;
+                    for (int j = 10 + i * 48; j < 30 + i * 48; j++) {
+                        sum += data_signal_remove_carrier[j];
+                    }
+
+                    if (sum > 0.0f) {
+                        decoded_data.add(1);
+                    } else {
+                        decoded_data.add(0);
+                    }
+                }
+
+                // check crc code
+                List<Integer> transmitted_crc = decoded_data.subList(frame_size, frame_size + crc_length);
+                List<Integer> calculated_crc = CRC8.get_crc8(decoded_data.subList(0, frame_size));
+                if (!transmitted_crc.equals(calculated_crc)) {
+                    System.out.println("CRC check fails at idx = " + id);
+                }else{
+                    // Since we only need decoded_data, break
+                    break;
+                }
             }
-
-            for (int i = 0; i < frame_size; i++){
-                sum = 0;
-                for (int j = 10 + i * 48; j < 30 + i * 48; j++){
-                    sum += data_signal_remove_carrier[j];
-                }
-
-                if (sum > 0){
-                    decoded_data.add(1);
-                }
-                else{
-                    decoded_data.add(0);
-                }
-            }
-
-
-
         }
 
         System.out.println(decoded_data.size());
 
         try {
             FileWriter writer = new FileWriter("src/OUTPUT.txt");
-            for (int i = 0; i < decoded_data.size(); i++) {
-                writer.write(String.valueOf(decoded_data.get(i)));
+            for (Integer decoded_datum : decoded_data.subList(0, frame_size)) {
+                writer.write(String.valueOf(decoded_datum));
             }
             writer.close();
         }catch (Exception e){
