@@ -154,6 +154,7 @@ public class test {
         List<Float> data_signal;
         float[] data_signal_remove_carrier = new float[48 * (frame_size+crc_length)];
         ArrayList<Integer> decoded_data = new ArrayList<>(10000);
+        ArrayList<Integer> decoded_data_foreach = new ArrayList<>(10000);
 
         // decode & check crc
         for (int start_id : start_indexes){
@@ -169,7 +170,7 @@ public class test {
                 }
 
                 // decode
-                decoded_data.clear();
+                decoded_data_foreach.clear();
                 for (int i = 0; i < frame_size + crc_length; i++) {
                     sum = 0.0f;
                     for (int j = 10 + i * 48; j < 30 + i * 48; j++) {
@@ -177,9 +178,9 @@ public class test {
                     }
 
                     if (sum > 0.0f) {
-                        decoded_data.add(1);
+                        decoded_data_foreach.add(1);
                     } else {
-                        decoded_data.add(0);
+                        decoded_data_foreach.add(0);
                     }
                 }
 
@@ -193,13 +194,14 @@ public class test {
                     break;
                 }
             }
+            decoded_data.addAll(decoded_data_foreach);
         }
 
         System.out.println(decoded_data.size());
 
         try {
             FileWriter writer = new FileWriter("src/OUTPUT.txt");
-            for (Integer decoded_datum : decoded_data.subList(0, frame_size)) {
+            for (Integer decoded_datum : decoded_data) {
                 writer.write(String.valueOf(decoded_datum));
             }
             writer.close();
