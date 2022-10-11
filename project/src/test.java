@@ -166,12 +166,12 @@ public class test {
                 data_signal = recorded.subList(id + 1, id + 1 + 48 * (frame_size + crc_length));
 
                 // remove carrier
-                for (int i = 0; i < 48 * frame_size; i++) {
+                for (int i = 0; i < 48 * (frame_size + crc_length); i++) {
                     data_signal_remove_carrier[i] = data_signal.get(i) * carrier.get(i);
                 }
 
                 // decode
-                for (int i = 0; i < frame_size; i++) {
+                for (int i = 0; i < frame_size + crc_length; i++) {
                     sum = 0.0f;
                     for (int j = 10 + i * 48; j < 30 + i * 48; j++) {
                         sum += data_signal_remove_carrier[j];
