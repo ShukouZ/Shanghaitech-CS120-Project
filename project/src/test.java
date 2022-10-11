@@ -134,10 +134,8 @@ public class test {
                 start_index = i;
             }
             else if ((i - start_index > 200) && (start_index != 0)){
-                if(!start_indexes.contains(start_index)){
-                    start_indexes.add(start_index);
-                }
-                // re init the local variables, prepare for next decode
+                start_indexes.add(start_index);
+                // re init the local variables, prepare for next index decode
                 syncPower_localMax = 0.0f;
                 syncFIFO.clear();
                 for(int j=0; j<preamble_size; ++j){
@@ -171,6 +169,7 @@ public class test {
                 }
 
                 // decode
+                decoded_data.clear();
                 for (int i = 0; i < frame_size + crc_length; i++) {
                     sum = 0.0f;
                     for (int j = 10 + i * 48; j < 30 + i * 48; j++) {
