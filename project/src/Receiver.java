@@ -19,53 +19,57 @@ public class Receiver {
         r.stop();
 
 
+        //////////////////////////////////////////////////////////// RECEIVER ////////////////////////////////////////////////////////////
         ArrayList<Float> recorded = r.getRecorded();
+        int crc_length = Config.CHECK_SIZE;
+        int frame_size = Config.FRAME_SIZE;
 
+////////// Task 1: Find all start indexes
         // Initialization
         float power = 0;
         int start_index = 0;
         float[] syncPower_debug = new float[recorded.size()];
-        float[] power_debug = new float[recorded.size()];
         float syncPower_localMax = 0;
-        ArrayList<Float> syncFIFO_list = new ArrayList<Float>();
         int preamble_size = Config.preamble.length;
+        List<Float> syncFIFO = new ArrayList<>();
 
         Arrays.fill(syncPower_debug, 0);
-        Arrays.fill(power_debug, 0);
         for(int i=0; i<preamble_size; ++i){
-            syncFIFO_list.add(0.0f);
+            syncFIFO.add(0.0f);
         }
-        syncFIFO_list.addAll(recorded);
 
-        ArrayList<Integer> start_indexes = new ArrayList<>();
+        List<Integer> start_indexes = new ArrayList<>();
 
         float sum; // temp
-
 
         for(int i = 0; i < recorded.size(); i++){
             float current_sample = recorded.get(i);
             power =  power*(1.0f - 1.0f / 64.0f) + (float)Math.pow(current_sample, 2.0f) / 64.0f;
-            power_debug[i] = power;
 
-            var syncFIFO = syncFIFO_list.subList(i, i + preamble_size);
+            syncFIFO.remove(0);
+            syncFIFO.add(current_sample);
 
-            sum = 0;
+            sum = 0.0f;
             for (int j = 0; j < preamble_size; j++){
                 sum += syncFIFO.get(j) * Config.preamble[j];
             }
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.1f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.05f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
             else if ((i - start_index > 200) && (start_index != 0)){
                 if(!start_indexes.contains(start_index)){
                     start_indexes.add(start_index);
+                    // re init the local variables, prepare for next index decode
+                    syncPower_localMax = 0.0f;
+                    syncFIFO.clear();
+                    for(int j=0; j<preamble_size; ++j){
+                        syncFIFO.add(0.0f);
+                    }
                 }
-//                start_index = 0;
-                syncPower_localMax = 0.0f;
             }
         }
 
@@ -75,70 +79,67 @@ public class Receiver {
             System.out.println(id);
         }
 
+////////// Task 2: decode all frames
         List<Float> data_signal;
-        float[] data_signal_remove_carrier = new float[48 * (Config.FRAME_SIZE + Config.CHECK_SIZE)];
+        float[] data_signal_remove_carrier = new float[48 * (frame_size+crc_length)];
+        ArrayList<Integer> decoded_data = new ArrayList<>(10000);
+        ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
 
-        ArrayList<Integer> decoded_data = new ArrayList<>();
-        List<Integer> decoded_frame_data = new ArrayList<>(100);
-        List<Integer> decoded_crc8 = new ArrayList<>(8);
-
-        // decode
-        for (int id : start_indexes){
-            for(int offset = -4; offset <= 1; offset++){
-                decoded_frame_data.clear();
-                decoded_crc8.clear();
+        // decode & check crc
+        for (int start_id : start_indexes){
+            // Try index nearby the given id: [id-2, id+2]
+            int[] potential_idx = new int[]{start_id-2, start_id-1, start_id+2, start_id+1, start_id};
+            boolean correct = false;
+            for(int id: potential_idx) {
                 // find data signal
-                data_signal = recorded.subList(id + offset, id + offset + 48 * (Config.FRAME_SIZE + Config.CHECK_SIZE));
+                data_signal = recorded.subList(id + 1, id + 1 + 48 * (frame_size + crc_length));
 
                 // remove carrier
-                for (int i = 0; i < 48 * (Config.FRAME_SIZE + Config.CHECK_SIZE); i++){
+                for (int i = 0; i < 48 * (frame_size + crc_length); i++) {
                     data_signal_remove_carrier[i] = data_signal.get(i) * carrier.get(i);
                 }
 
-                for (int i = 0; i < Config.FRAME_SIZE; i++){
-                    sum = 0;
-                    for (int j = 10 + i * 48; j < 30 + i * 48; j++){
+                // decode
+                decoded_data_foreach.clear();
+                for (int i = 0; i < frame_size + crc_length; i++) {
+                    sum = 0.0f;
+                    for (int j = 10 + i * 48; j < 30 + i * 48; j++) {
                         sum += data_signal_remove_carrier[j];
                     }
 
-                    if (sum > 0){
-                        decoded_frame_data.add(1);
-                    }
-                    else{
-                        decoded_frame_data.add(0);
+                    if (sum > 0.0f) {
+                        decoded_data_foreach.add(1);
+                    } else {
+                        decoded_data_foreach.add(0);
                     }
                 }
 
-                for (int i = Config.FRAME_SIZE; i < Config.FRAME_SIZE + Config.CHECK_SIZE; i++){
-                    sum = 0;
-                    for (int j = 10 + i * 48; j < 30 + i * 48; j++){
-                        sum += data_signal_remove_carrier[j];
-                    }
-
-                    if (sum > 0){
-                        decoded_crc8.add(1);
-                    }
-                    else{
-                        decoded_crc8.add(0);
-                    }
-                }
-                List<Integer> data_crc8 = CRC8.get_crc8(decoded_frame_data);
-
-                boolean correct = true;
-                for (int i = 0; i < 8; i++){
-                    if(!Objects.equals(data_crc8.get(i), decoded_crc8.get(i))){
-                        correct = false;
-                        break;
-                    }
-                }
-                if(correct){
-                    System.out.println("Correct:" + id);
+                // check crc code
+                List<Integer> transmitted_crc = decoded_data_foreach.subList(frame_size, frame_size + crc_length);
+                List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, frame_size));
+                if (transmitted_crc.equals(calculated_crc)) {
+                    correct = true;
                     break;
                 }
+
+            }
+            if(!correct){
+                System.out.println("CRC check fails at idx = " + start_id);
             }
 
-            // output
-            decoded_data.addAll(decoded_frame_data);
+            decoded_data.addAll(decoded_data_foreach.subList(0, frame_size));
+
+            if (start_id == start_indexes.get(1)){
+                try {
+                    FileWriter writer = new FileWriter("src/2.txt");
+                    for (Integer decoded_datum : decoded_data_foreach) {
+                        writer.write(String.valueOf(decoded_datum));
+                    }
+                    writer.close();
+                }catch (Exception e){
+                    System.out.println("Cannot read file.");
+                }
+            }
 
         }
 

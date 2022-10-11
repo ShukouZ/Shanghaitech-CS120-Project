@@ -49,6 +49,9 @@ public class test {
         int frame_size = Config.FRAME_SIZE;
         int frame_num = 10000 / frame_size;
         int zero_buffer_length = 100;
+        List<Integer> frame;
+        List<Integer> crc_code;
+
 
         // add preamble and frame, each frame has 100 bits
         for(int i=0; i<frame_num; ++i){
@@ -60,12 +63,24 @@ public class test {
             track1.addAll(Arrays.asList(Config.preamble));
 
             // modulation
-            List<Integer> frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
+            frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
             float[] frame_wave = new float[48*(frame_size+crc_length)];
 
+
+//            if(i==1){
+//                try {
+//                    FileWriter writer = new FileWriter("src/1.txt");
+//                    for (Integer decoded_datum : frame) {
+//                        writer.write(String.valueOf(decoded_datum));
+//                    }
+//                    writer.close();
+//                }catch (Exception e){
+//                    System.out.println("Cannot read file.");
+//                }
+//            }
+
             //// calculate crc8
-            List<Integer> crc_code = CRC8.get_crc8(frame);
-            frame.addAll(crc_code);
+            crc_code = CRC8.get_crc8(frame);
             //// end of crc code calculation
 
             for(int j=0; j<frame.size(); ++j){
@@ -73,6 +88,13 @@ public class test {
                     frame_wave[j*48+k] = carrier.get(j*48+k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
+            for(int j=frame_size; j<frame_size + crc_length; ++j){
+                for(int k=0; k<48; ++k){
+                    frame_wave[j*48+k] = carrier.get(j*48+k) * (crc_code.get(j - frame_size)*2-1); //  baud rate 48/48000 = 1000bps
+                }
+            }
+
+
             // add frame to track
             for (float v : frame_wave)
                 track1.add(v);
@@ -81,6 +103,7 @@ public class test {
             for (int j = 0; j < zero_buffer_length; j++){
                 track1.add(0.0f);
             }
+
         }
         System.out.println("Size of track:"+track1.size());
         r.play(track1);
@@ -129,7 +152,7 @@ public class test {
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.03f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.05f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
@@ -161,7 +184,7 @@ public class test {
         // decode & check crc
         for (int start_id : start_indexes){
             // Try index nearby the given id: [id-2, id+2]
-            int[] potential_idx = new int[]{start_id-2, start_id-1, start_id, start_id+1, start_id+2};
+            int[] potential_idx = new int[]{start_id-2, start_id-1, start_id+2, start_id+1, start_id};
             boolean correct = false;
             for(int id: potential_idx) {
                 // find data signal
@@ -199,7 +222,21 @@ public class test {
             if(!correct){
                 System.out.println("CRC check fails at idx = " + start_id);
             }
+
             decoded_data.addAll(decoded_data_foreach.subList(0, frame_size));
+
+            if (start_id == start_indexes.get(1)){
+                try {
+                    FileWriter writer = new FileWriter("src/2.txt");
+                    for (Integer decoded_datum : decoded_data_foreach) {
+                        writer.write(String.valueOf(decoded_datum));
+                    }
+                    writer.close();
+                }catch (Exception e){
+                    System.out.println("Cannot read file.");
+                }
+            }
+
         }
 
         System.out.println(decoded_data.size());
