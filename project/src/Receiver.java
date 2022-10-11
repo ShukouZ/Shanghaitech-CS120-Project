@@ -56,7 +56,7 @@ public class Receiver {
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.05f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.02f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
@@ -88,7 +88,7 @@ public class Receiver {
         // decode & check crc
         for (int start_id : start_indexes){
             // Try index nearby the given id: [id-2, id+2]
-            int[] potential_idx = new int[]{start_id-2, start_id-1, start_id+2, start_id+1, start_id};
+            int[] potential_idx = new int[]{start_id-2, start_id-1, start_id+2, start_id, start_id+1};
             boolean correct = false;
             for(int id: potential_idx) {
                 // find data signal
@@ -119,6 +119,7 @@ public class Receiver {
                 List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, frame_size));
                 if (transmitted_crc.equals(calculated_crc)) {
                     correct = true;
+                    System.out.println(id-start_id);
                     break;
                 }
 
