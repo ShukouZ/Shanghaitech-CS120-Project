@@ -129,17 +129,19 @@ public class test {
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.015f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.03f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
             else if ((i - start_index > 200) && (start_index != 0)){
-                start_indexes.add(start_index);
-                // re init the local variables, prepare for next index decode
-                syncPower_localMax = 0.0f;
-                syncFIFO.clear();
-                for(int j=0; j<preamble_size; ++j){
-                    syncFIFO.add(0.0f);
+                if(!start_indexes.contains(start_index)){
+                    start_indexes.add(start_index);
+                    // re init the local variables, prepare for next index decode
+                    syncPower_localMax = 0.0f;
+                    syncFIFO.clear();
+                    for(int j=0; j<preamble_size; ++j){
+                        syncFIFO.add(0.0f);
+                    }
                 }
             }
         }
@@ -154,12 +156,13 @@ public class test {
         List<Float> data_signal;
         float[] data_signal_remove_carrier = new float[48 * (frame_size+crc_length)];
         ArrayList<Integer> decoded_data = new ArrayList<>(10000);
-        ArrayList<Integer> decoded_data_foreach = new ArrayList<>(10000);
+        ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
 
         // decode & check crc
         for (int start_id : start_indexes){
             // Try index nearby the given id: [id-2, id+2]
             int[] potential_idx = new int[]{start_id-2, start_id-1, start_id, start_id+1, start_id+2};
+            boolean correct = false;
             for(int id: potential_idx) {
                 // find data signal
                 data_signal = recorded.subList(id + 1, id + 1 + 48 * (frame_size + crc_length));
@@ -185,16 +188,18 @@ public class test {
                 }
 
                 // check crc code
-                List<Integer> transmitted_crc = decoded_data.subList(frame_size, frame_size + crc_length);
-                List<Integer> calculated_crc = CRC8.get_crc8(decoded_data.subList(0, frame_size));
-                if (!transmitted_crc.equals(calculated_crc)) {
-                    System.out.println("CRC check fails at idx = " + id);
-                }else{
-                    // Since we only need decoded_data, break
+                List<Integer> transmitted_crc = decoded_data_foreach.subList(frame_size, frame_size + crc_length);
+                List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, frame_size));
+                if (transmitted_crc.equals(calculated_crc)) {
+                    correct = true;
                     break;
                 }
+
             }
-            decoded_data.addAll(decoded_data_foreach);
+            if(!correct){
+                System.out.println("CRC check fails at idx = " + start_id);
+            }
+            decoded_data.addAll(decoded_data_foreach.subList(0, frame_size));
         }
 
         System.out.println(decoded_data.size());
