@@ -56,7 +56,7 @@ public class Receiver {
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.02f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.01f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
@@ -73,22 +73,23 @@ public class Receiver {
             }
         }
 
-        System.out.println();
-        System.out.println("Start indexes:");
-        for(int id : start_indexes){
-            System.out.println(id);
-        }
+//        System.out.println();
+//        System.out.println("Start indexes:");
+//        for(int id : start_indexes){
+//            System.out.println(id);
+//        }
 
 ////////// Task 2: decode all frames
         List<Float> data_signal;
         float[] data_signal_remove_carrier = new float[48 * (frame_size+crc_length)];
         ArrayList<Integer> decoded_data = new ArrayList<>(10000);
         ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
+        int last_offset = 1;
 
         // decode & check crc
         for (int start_id : start_indexes){
             // Try index nearby the given id: [id-2, id+2]
-            int[] potential_idx = new int[]{start_id-2, start_id-1, start_id+2, start_id, start_id+1};
+            int[] potential_idx = new int[]{start_id-2, start_id-1, start_id+2, start_id, start_id+1, start_id+last_offset};
             boolean correct = false;
             for(int id: potential_idx) {
                 // find data signal
@@ -119,7 +120,8 @@ public class Receiver {
                 List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, frame_size));
                 if (transmitted_crc.equals(calculated_crc)) {
                     correct = true;
-                    System.out.println(id-start_id);
+//                    System.out.println(id-start_id);
+                    last_offset = id - start_id;
                     break;
                 }
 
@@ -129,22 +131,10 @@ public class Receiver {
             }
 
             decoded_data.addAll(decoded_data_foreach.subList(0, frame_size));
-
-            if (start_id == start_indexes.get(1)){
-                try {
-                    FileWriter writer = new FileWriter("src/2.txt");
-                    for (Integer decoded_datum : decoded_data_foreach) {
-                        writer.write(String.valueOf(decoded_datum));
-                    }
-                    writer.close();
-                }catch (Exception e){
-                    System.out.println("Cannot read file.");
-                }
-            }
-
         }
 
-        System.out.println(decoded_data.size());
+        System.out.println("Done.");
+        System.out.println(decoded_data.size() + " bits received.");
 
         try {
             FileWriter writer = new FileWriter("src/OUTPUT.txt");
