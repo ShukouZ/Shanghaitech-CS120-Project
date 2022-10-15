@@ -12,7 +12,7 @@ public class Receiver {
         ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
         r.start();
         try {
-            Thread.sleep(20000);  // ms
+            Thread.sleep(15000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }

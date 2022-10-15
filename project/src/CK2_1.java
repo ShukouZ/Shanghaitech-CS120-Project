@@ -6,17 +6,17 @@ public class CK2_1 {
         r.init();
 
 
-        SinWave_double wave1 = new SinWave_double(0, 1000, Config.PHY_TX_SAMPLING_RATE);
-        SinWave_double wave2 = new SinWave_double(0, 10000, Config.PHY_TX_SAMPLING_RATE);
+        SinWave wave1 = new SinWave(0, 1000, Config.PHY_TX_SAMPLING_RATE);
+        SinWave wave2 = new SinWave(0, 10000, Config.PHY_TX_SAMPLING_RATE);
 
-        ArrayList<Double> sample1 = wave1.sample(10 * Config.PHY_TX_SAMPLING_RATE);
-        ArrayList<Double> sample2 = wave2.sample(10 * Config.PHY_TX_SAMPLING_RATE);
+        ArrayList<Float> sample1 = wave1.sample(10 * Config.PHY_TX_SAMPLING_RATE);
+        ArrayList<Float> sample2 = wave2.sample(10 * Config.PHY_TX_SAMPLING_RATE);
 
 
         ArrayList<Float> track = new ArrayList<>(10 * Config.PHY_TX_SAMPLING_RATE);
 
         for (int i = 0; i < 10 * Config.PHY_TX_SAMPLING_RATE; i++){
-            track.add((float)(sample1.get(i) + sample2.get(i)));
+            track.add((sample1.get(i) + sample2.get(i)));
         }
 
 //        ArrayList<Float> track = new ArrayList<>(Arrays.asList(Config.preamble));
