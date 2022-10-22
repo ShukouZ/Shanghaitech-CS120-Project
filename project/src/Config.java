@@ -32,7 +32,7 @@ public class Config {
 	public final static int PHY_TX_SAMPLING_RATE = 48000;
 	
 	// Carrier Frequency
-	public final static int PHY_CARRIER_FREQ = 10000;
+	public final static int PHY_CARRIER_FREQ = 500;
 	
 	// Symbol duration
 	public final static int PHY_SYMBOL_RATE = 12000;
