@@ -89,7 +89,7 @@ public class AudioHw implements AsioDriverListener {
 //		}
 	}
 
-	public void play(ArrayList<Float> track){
+	public void PHYSend(ArrayList<Float> track){
 		playList.addAll(track);
 	}
 

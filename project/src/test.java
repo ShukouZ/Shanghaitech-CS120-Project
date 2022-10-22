@@ -2,7 +2,69 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.*;
 
-public class Sender {
+enum MACState{
+    RX, TX, FRAME_DETECTION
+}
+
+class PHY_TX extends Thread {
+    private AudioHw audioHw;
+    private ArrayList<Float> Tx_buffer;
+    public PHY_TX(AudioHw hw, ArrayList<Float> tx_buffer){
+        audioHw = hw;
+        Tx_buffer = tx_buffer;
+    }
+
+    @Override
+    public void run(){
+        while (true){
+            if (!Tx_buffer.isEmpty()){
+                synchronized (Tx_buffer){
+                    System.out.println(Tx_buffer.size());
+                    audioHw.PHYSend(Tx_buffer);
+                    Tx_buffer.clear();
+                    break;
+                }
+            }
+        }
+    }
+}
+
+class PHY_RX extends Thread {
+    private AudioHw audioHw;
+    private  ArrayList<Float> Rx_buffer;
+    public PHY_RX(AudioHw hw, ArrayList<Float> buffer){
+        audioHw = hw;
+        Rx_buffer = buffer;
+    }
+    @Override
+    public void run(){
+        while (true){
+
+
+            break;
+        }
+    }
+}
+
+class decoder extends Thread {
+    @Override
+    public void run(){
+        while (true){
+
+
+            break;
+        }
+    }
+}
+
+class MAC extends Thread {
+    private AudioHw audioHw;
+    private ArrayList<Float> Rx_buffer;
+    private ArrayList<Float> Tx_buffer;
+    private ArrayList<Float> received_FIFO;
+
+    private MACState state;
+
     public static ArrayList<Integer> readTxt(String filePath) {
         ArrayList<Integer> input_list =  new ArrayList<>();
         try {
@@ -25,18 +87,17 @@ public class Sender {
         return input_list;
     }
 
-    public static void main(final String[] args) {
-        // init the audio
-        final AudioHw r = new AudioHw();
-        r.init();
+    public MAC(ArrayList<Float> rx_buffer, ArrayList<Float> tx_buffer, AudioHw hw){
+        audioHw = hw;
+        state = MACState.FRAME_DETECTION;
+        Rx_buffer = rx_buffer;
+        Tx_buffer = tx_buffer;
+    }
 
-//////////////////////////////////////////////////////////// TRANSMITTER ////////////////////////////////////////////////////////////
+    @Override
+    public void run(){
         // init the frame
         ArrayList<Float> track1 = new ArrayList<>();
-        // add zero buffer
-        for (int j = 0; j < 48000; j++){
-            track1.add(0.0f);
-        }
         String filename = "src/INPUT.txt";
         ArrayList<Integer> frame_data = readTxt(filename);
 
@@ -66,19 +127,6 @@ public class Sender {
             frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
             float[] frame_wave = new float[48*(frame_size+crc_length)];
 
-
-//            if(i==1){
-//                try {
-//                    FileWriter writer = new FileWriter("src/1.txt");
-//                    for (Integer decoded_datum : frame) {
-//                        writer.write(String.valueOf(decoded_datum));
-//                    }
-//                    writer.close();
-//                }catch (Exception e){
-//                    System.out.println("Cannot read file.");
-//                }
-//            }
-
             //// calculate crc8
             crc_code = CRC8.get_crc8(frame);
             //// end of crc code calculation
@@ -105,16 +153,32 @@ public class Sender {
             }
 
         }
+
         System.out.println("Size of track:"+track1.size());
-        r.PHYSend(track1);
+        audioHw.PHYSend(track1);
+    }
+}
 
 
-        r.start();
+public class test {
+    public static void main(final String[] args) {
+        AudioHw audioHw = new AudioHw();
+        audioHw.init();
+        ArrayList<Float> Tx_buffer = new ArrayList<>();
+        ArrayList<Float> Rx_buffer = new ArrayList<>();
+
+        MAC macThread = new MAC(Rx_buffer, Tx_buffer, audioHw);
+        PHY_RX RxThread = new PHY_RX(audioHw, Rx_buffer);
+        PHY_TX TxThread = new PHY_TX(audioHw, Tx_buffer);
+
+        audioHw.start();
+        macThread.start();
+
         try {
             Thread.sleep(15000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
-        r.stop();
+        audioHw.stop();
     }
 }

@@ -12,7 +12,7 @@ public class Receiver {
         ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
         r.start();
         try {
-            Thread.sleep(15000);  // ms
+            Thread.sleep(18000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
@@ -56,7 +56,7 @@ public class Receiver {
 
             syncPower_debug[i] = sum / 200.0f;
 
-            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.01f)) {
+            if ((syncPower_debug[i] > power * 2.0f) && (syncPower_debug[i] > syncPower_localMax) && (syncPower_debug[i] > 0.8f)) {
                 syncPower_localMax = syncPower_debug[i];
                 start_index = i;
             }
@@ -72,6 +72,10 @@ public class Receiver {
                 }
             }
         }
+
+//        for (int i : start_indexes){
+//            System.out.println(syncPower_debug[i]);
+//        }
 
 //        System.out.println();
 //        System.out.println("Start indexes:");
