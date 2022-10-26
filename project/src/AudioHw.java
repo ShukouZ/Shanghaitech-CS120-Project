@@ -19,6 +19,9 @@ public class AudioHw implements AsioDriverListener {
 
 	private float[] output;
 	private float[] input;
+	private float[] pre_input;
+
+	private boolean frameDetected;
 
 	private ArrayList<float[]> recorded;
 
@@ -56,6 +59,8 @@ public class AudioHw implements AsioDriverListener {
 			recorded = new ArrayList<>();
 
 			playLoc = 0;
+			frameDetected = false;
+			pre_input = new float[Config.HW_BUFFER_SIZE];
 
 			asioDriver.setSampleRate(Config.PHY_TX_SAMPLING_RATE);
 			/*
@@ -93,6 +98,13 @@ public class AudioHw implements AsioDriverListener {
 		playList.addAll(track);
 	}
 
+	// Detect preamble.
+	// If not detected, return -1.
+	// If detected, set frameDetected to true, return the start index.
+	private int detectPreamble(){
+		ArrayList<Float>
+	}
+
 	@Override
 	public void bufferSwitch(final long systemTime, final long samplePosition, final Set<AsioChannel> channels) {
 		for (int i = 0; i < Config.HW_BUFFER_SIZE; i++) {
@@ -107,7 +119,9 @@ public class AudioHw implements AsioDriverListener {
 
 		for (AsioChannel channelInfo : channels) {
 			if (channelInfo.isInput()){
+				pre_input = input.clone();
 				channelInfo.read(input);
+
 				recorded.add(input.clone());
 			}
 			else {
