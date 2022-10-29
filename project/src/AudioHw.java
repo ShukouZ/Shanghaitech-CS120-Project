@@ -26,6 +26,8 @@ public class AudioHw implements AsioDriverListener {
 	private ArrayList<float[]> frame_table;
 	private int frame_stored_size;
 
+	private int frame_recorded_num;
+
 	private int playLoc;
 
 	public void init() {
@@ -63,6 +65,7 @@ public class AudioHw implements AsioDriverListener {
 
 			playLoc = 0;
 			frameDetected = false;
+			frame_recorded_num = 0;
 
 			for(int i=0; i<Config.preamble.length; ++i){
 				syncFIFO.add(0.0f);
@@ -160,6 +163,7 @@ public class AudioHw implements AsioDriverListener {
 							frame_stored_size += 1;
 						}else{
 							frame_stored_size=0;
+							frame_recorded_num++;
 							frameDetected=false;
 
 							syncFIFO.remove(0);
@@ -215,8 +219,14 @@ public class AudioHw implements AsioDriverListener {
 		System.out.println("sampleRateDidChange() callback received.");
 	}
 
-	public ArrayList<float[]> getFrameTable(){
-		return frame_table;
+	public float[] getFrame(int id){
+		if (id < frame_recorded_num){
+			return frame_table.get(id);
+		}
+		else
+		{
+			throw new ArrayIndexOutOfBoundsException();
+		}
 	}
 }
 
