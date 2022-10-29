@@ -23,12 +23,12 @@ public class Receiver {
 
 
         long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < 18000) {
+        while (System.currentTimeMillis() - startTime < 20000) {
             try {
                 data_signal = audioHw.getFrame(frame_decoded_num);
 
                 // remove carrier
-                for (int i = 0; i < 48 * (Config.FRAME_SIZE+Config.CHECK_SIZE); i++) {
+                for (int i = 0; i < 48 * data_size; i++) {
                     data_signal_remove_carrier[i] = data_signal[i] * carrier.get(i);
                 }
 
@@ -58,13 +58,20 @@ public class Receiver {
                 if(!correct){
                     System.out.println("CRC check fails at idx = " + frame_decoded_num);
                 }
+                else
+                {
+                    System.out.println("CRC correct at idx = " + frame_decoded_num);
+                }
 
                 decoded_data.addAll(decoded_data_foreach.subList(0, Config.FRAME_SIZE));
+                frame_decoded_num++;
 
             }catch (ArrayIndexOutOfBoundsException e){
 
             }
         }
+
+        System.out.println(decoded_data.size() + " bits received.");
 
         try {
             FileWriter writer = new FileWriter("src/OUTPUT.txt");

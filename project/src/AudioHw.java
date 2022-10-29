@@ -126,7 +126,7 @@ public class AudioHw implements AsioDriverListener {
 
 			syncPower_debug = sum / 200.0f;
 
-			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 0.8f)) {
+			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 0.5f)) {
 				syncPower_localMax = syncPower_debug;
 				start_index = i;
 				break;
