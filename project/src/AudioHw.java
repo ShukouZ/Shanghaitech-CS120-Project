@@ -126,7 +126,7 @@ public class AudioHw implements AsioDriverListener {
 
 			syncPower_debug = sum / 200.0f;
 
-			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 0.5f)) {
+			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 0.2f)) {
 				syncPower_localMax = syncPower_debug;
 				start_index = i;
 				break;
@@ -136,8 +136,9 @@ public class AudioHw implements AsioDriverListener {
 			frameDetected = true;
 			syncPower_localMax = 0;
 			float[] new_frame = new float[Config.SAMPLE_SIZE];
-			System.arraycopy(input, start_index, new_frame, start_index, Config.HW_BUFFER_SIZE - start_index);
+			System.arraycopy(input, start_index, new_frame, 0, Config.HW_BUFFER_SIZE - start_index);
 			frame_table.add(new_frame);
+			frame_stored_size = Config.HW_BUFFER_SIZE - start_index;
 		}
 	}
 
@@ -162,13 +163,14 @@ public class AudioHw implements AsioDriverListener {
 							frame_table.get(frame_table.size()-1)[frame_stored_size] = input_data;
 							frame_stored_size += 1;
 						}else{
-							frame_stored_size=0;
-							frame_recorded_num++;
-							frameDetected=false;
-
 							syncFIFO.remove(0);
 							syncFIFO.add(input_data);
 						}
+					}
+					if (frame_stored_size == Config.SAMPLE_SIZE){
+						frame_stored_size=0;
+						frame_recorded_num++;
+						frameDetected=false;
 					}
 				}else{
 					detectPreamble();

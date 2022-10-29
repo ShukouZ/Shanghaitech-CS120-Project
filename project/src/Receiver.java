@@ -19,8 +19,6 @@ public class Receiver {
         ArrayList<Integer> decoded_data = new ArrayList<>(10000);
         ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
         float sum;
-        boolean correct = false;
-
 
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - startTime < 20000) {
@@ -50,18 +48,15 @@ public class Receiver {
                 // check crc code
                 List<Integer> transmitted_crc = decoded_data_foreach.subList(Config.FRAME_SIZE, data_size);
                 List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, Config.FRAME_SIZE));
-                if (transmitted_crc.equals(calculated_crc)) {
-                    correct = true;
-                }
 
 
-                if(!correct){
+                if(!transmitted_crc.equals(calculated_crc)){
                     System.out.println("CRC check fails at idx = " + frame_decoded_num);
                 }
-                else
-                {
-                    System.out.println("CRC correct at idx = " + frame_decoded_num);
-                }
+//                else
+//                {
+//                    System.out.println("CRC correct at idx = " + frame_decoded_num);
+//                }
 
                 decoded_data.addAll(decoded_data_foreach.subList(0, Config.FRAME_SIZE));
                 frame_decoded_num++;
