@@ -155,6 +155,7 @@ class MAC extends Thread {
         }
 
         System.out.println("Size of track:"+track1.size());
+
         audioHw.PHYSend(track1);
     }
 }

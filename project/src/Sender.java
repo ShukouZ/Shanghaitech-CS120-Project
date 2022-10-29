@@ -1,6 +1,11 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Sender {
     public static ArrayList<Integer> readTxt(String filePath) {
@@ -24,19 +29,13 @@ public class Sender {
         }
         return input_list;
     }
-
     public static void main(final String[] args) {
-        // init the audio
-        final AudioHw r = new AudioHw();
-        r.init();
+        AudioHw audioHw = new AudioHw();
+        audioHw.init();
+        audioHw.start();
 
-//////////////////////////////////////////////////////////// TRANSMITTER ////////////////////////////////////////////////////////////
         // init the frame
         ArrayList<Float> track1 = new ArrayList<>();
-        // add zero buffer
-        for (int j = 0; j < 48000; j++){
-            track1.add(0.0f);
-        }
         String filename = "src/INPUT.txt";
         ArrayList<Integer> frame_data = readTxt(filename);
 
@@ -66,19 +65,6 @@ public class Sender {
             frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
             float[] frame_wave = new float[48*(frame_size+crc_length)];
 
-
-//            if(i==1){
-//                try {
-//                    FileWriter writer = new FileWriter("src/1.txt");
-//                    for (Integer decoded_datum : frame) {
-//                        writer.write(String.valueOf(decoded_datum));
-//                    }
-//                    writer.close();
-//                }catch (Exception e){
-//                    System.out.println("Cannot read file.");
-//                }
-//            }
-
             //// calculate crc8
             crc_code = CRC8.get_crc8(frame);
             //// end of crc code calculation
@@ -105,16 +91,16 @@ public class Sender {
             }
 
         }
+
         System.out.println("Size of track:"+track1.size());
-        r.PHYSend(track1);
 
+        audioHw.PHYSend(track1);
 
-        r.start();
         try {
             Thread.sleep(15000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
-        r.stop();
+        audioHw.stop();
     }
 }

@@ -1,6 +1,5 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
 import com.synthbot.jasiohost.*;
 
 public class AudioHw implements AsioDriverListener {
@@ -19,11 +18,13 @@ public class AudioHw implements AsioDriverListener {
 
 	private float[] output;
 	private float[] input;
-	private float[] pre_input;
+	List<Float> syncFIFO = new ArrayList<>();
+	private float syncPower_localMax;
 
 	private boolean frameDetected;
 
-	private ArrayList<float[]> recorded;
+	private ArrayList<float[]> frame_table;
+	private int frame_stored_size;
 
 	private int playLoc;
 
@@ -56,11 +57,16 @@ public class AudioHw implements AsioDriverListener {
 
 			input = new float[Config.HW_BUFFER_SIZE];
 			activeChannels.add(inputChannel);
-			recorded = new ArrayList<>();
+			frame_table = new ArrayList<>();
+			frame_stored_size = 0;
+			syncPower_localMax = 0.0f;
 
 			playLoc = 0;
 			frameDetected = false;
-			pre_input = new float[Config.HW_BUFFER_SIZE];
+
+			for(int i=0; i<Config.preamble.length; ++i){
+				syncFIFO.add(0.0f);
+			}
 
 			asioDriver.setSampleRate(Config.PHY_TX_SAMPLING_RATE);
 			/*
@@ -101,8 +107,35 @@ public class AudioHw implements AsioDriverListener {
 	// Detect preamble.
 	// If not detected, return -1.
 	// If detected, set frameDetected to true, return the start index.
-	private int detectPreamble(){
-		ArrayList<Float>
+	private void detectPreamble(){
+		float sum, syncPower_debug, current_sample;
+		int start_index=-1;
+		for(int i=0; i<Config.HW_BUFFER_SIZE; i++) {
+			current_sample=input[i];
+
+			syncFIFO.remove(0);
+			syncFIFO.add(current_sample);
+
+			sum = 0.0f;
+			for (int j = 0; j < Config.preamble.length; j++) {
+				sum += syncFIFO.get(j) * Config.preamble[j];
+			}
+
+			syncPower_debug = sum / 200.0f;
+
+			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 0.8f)) {
+				syncPower_localMax = syncPower_debug;
+				start_index = i;
+				break;
+			}
+		}
+		if(start_index != -1){
+			frameDetected = true;
+			syncPower_localMax = 0;
+			float[] new_frame = new float[Config.SAMPLE_SIZE];
+			System.arraycopy(input, start_index, new_frame, start_index, Config.HW_BUFFER_SIZE - start_index);
+			frame_table.add(new_frame);
+		}
 	}
 
 	@Override
@@ -119,15 +152,32 @@ public class AudioHw implements AsioDriverListener {
 
 		for (AsioChannel channelInfo : channels) {
 			if (channelInfo.isInput()){
-				pre_input = input.clone();
 				channelInfo.read(input);
+				if(frameDetected) {
+					for(float input_data: input){
+						if(frame_stored_size < Config.SAMPLE_SIZE){
+							frame_table.get(frame_table.size()-1)[frame_stored_size] = input_data;
+							frame_stored_size += 1;
+						}else{
+							frame_stored_size=0;
+							frameDetected=false;
 
-				recorded.add(input.clone());
+							syncFIFO.remove(0);
+							syncFIFO.add(input_data);
+						}
+					}
+				}else{
+					detectPreamble();
+				}
 			}
 			else {
 				channelInfo.write(output);
 			}
+
+
 		}
+
+
 	}
 
 	@Override
@@ -165,16 +215,8 @@ public class AudioHw implements AsioDriverListener {
 		System.out.println("sampleRateDidChange() callback received.");
 	}
 
-	public ArrayList<Float> getRecorded(){
-		ArrayList<Float> rslt = new ArrayList<>(recorded.size());
-
-		for (float[] buffer : recorded){
-			for (int i = 0; i < Config.HW_BUFFER_SIZE; i++){
-				rslt.add(buffer[i]);
-			}
-		}
-
-		return rslt;
+	public ArrayList<float[]> getFrameTable(){
+		return frame_table;
 	}
 }
 
