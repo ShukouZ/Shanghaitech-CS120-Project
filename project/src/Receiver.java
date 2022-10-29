@@ -21,7 +21,7 @@ public class Receiver {
         float sum;
 
         long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < 20000) {
+        while (System.currentTimeMillis() - startTime < 1000) {
             try {
                 data_signal = audioHw.getFrame(frame_decoded_num);
 
@@ -65,6 +65,8 @@ public class Receiver {
 
             }
         }
+
+        audioHw.stop();
 
         System.out.println(decoded_data.size() + " bits received.");
 
