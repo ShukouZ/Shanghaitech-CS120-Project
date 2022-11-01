@@ -1,3 +1,5 @@
+import com.synthbot.jasiohost.AsioDriverState;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,10 +57,7 @@ public class Sender {
 
         // add preamble and frame, each frame has 100 bits
         for(int i=0; i<frame_num; ++i){
-            // add zero buffer1
-            for (int j = 0; j < zero_buffer_length; j++){
-                track1.add(0.0f);
-            }
+            track1.clear();
             // add preamble
             track1.addAll(Arrays.asList(Config.preamble));
 
@@ -71,20 +70,20 @@ public class Sender {
                 frame.add(bit);
             }
             frame.addAll(frame_data.subList(i * frame_size, i * frame_size + frame_size));
-            float[] frame_wave = new float[48*(frame_num+frame_size+crc_length)];
+            float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame_num+frame_size+crc_length)];
 
             //// calculate crc8
             crc_code = CRC8.get_crc8(frame);
             //// end of crc code calculation
 
             for(int j=0; j<frame.size(); ++j){
-                for(int k=0; k<48; ++k){
-                    frame_wave[j*48+k] = carrier.get(j*48+k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
+                for(int k = 0; k< Config.SAMPLE_PER_BIT; ++k){
+                    frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
             for(int j=frame_size+Config.ID_SIZE; j<frame_size + Config.ID_SIZE + crc_length; ++j){
-                for(int k=0; k<48; ++k){
-                    frame_wave[j*48+k] = carrier.get(j*48+k) * (crc_code.get(j-frame_size-Config.ID_SIZE)*2-1); //  baud rate 48/48000 = 1000bps
+                for(int k = 0; k< Config.SAMPLE_PER_BIT; ++k){
+                    frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (crc_code.get(j-frame_size-Config.ID_SIZE)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
 
@@ -94,21 +93,29 @@ public class Sender {
                 track1.add(v);
 
             // add zero buffer2
-            for (int j = 0; j < zero_buffer_length+412; j++){
+            for (int j = 0; j < Config.HW_BUFFER_SIZE; j++){
                 track1.add(0.0f);
             }
+            System.out.println("Send Idx:"+i+"\twith size:"+track1.size());
+            System.out.println();
+            audioHw.PHYSend(track1);
+
+            try {
+                Thread.sleep(350);  // ms
+            } catch (final InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            new Thread() {
+                @Override
+                public void run() {
+
+                }
+            }.start();
 
         }
 
-        System.out.println("Size of track:"+track1.size());
 
-        audioHw.PHYSend(track1);
-
-        try {
-            Thread.sleep(15000);  // ms
-        } catch (final InterruptedException e) {
-            e.printStackTrace();
-        }
         audioHw.stop();
     }
 }

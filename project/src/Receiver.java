@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Receiver {
+
     public static void main(final String[] args) {
         AudioHw audioHw = new AudioHw();
         audioHw.init();
@@ -15,7 +16,7 @@ public class Receiver {
         int frame_decoded_num = 0;
         float[] data_signal;
         int data_size = (Config.FRAME_SIZE+Config.CHECK_SIZE+Config.ID_SIZE);
-        float[] data_signal_remove_carrier = new float[48 * data_size];
+        float[] data_signal_remove_carrier = new float[Config.SAMPLE_PER_BIT * data_size];
         ArrayList<Integer> decoded_data = new ArrayList<>(10000);
         ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
         float sum;
@@ -26,7 +27,7 @@ public class Receiver {
                 data_signal = audioHw.getFrame(frame_decoded_num);
 
                 // remove carrier
-                for (int i = 0; i < 48 * data_size; i++) {
+                for (int i = 0; i < Config.SAMPLE_PER_BIT * data_size; i++) {
                     data_signal_remove_carrier[i] = data_signal[i] * carrier.get(i);
                 }
 
@@ -34,7 +35,7 @@ public class Receiver {
                 decoded_data_foreach.clear();
                 for (int i = 0; i < data_size; i++) {
                     sum = 0.0f;
-                    for (int j = 10 + i * 48; j < 30 + i * 48; j++) {
+                    for (int j = 5 + i * Config.SAMPLE_PER_BIT; j < 15 + i * Config.SAMPLE_PER_BIT; j++) {
                         sum += data_signal_remove_carrier[j];
                     }
 
@@ -57,7 +58,7 @@ public class Receiver {
                     for(offset = 1; offset < 97; offset++)
                     {
                         // remove carrier
-                        for (int i = 0; i < 48 * data_size; i++) {
+                        for (int i = 0; i < Config.SAMPLE_PER_BIT * data_size; i++) {
                             data_signal_remove_carrier[i] = data_signal[i] * carrier.get(i + offset);
                         }
 
@@ -65,7 +66,7 @@ public class Receiver {
                         decoded_data_foreach.clear();
                         for (int i = 0; i < data_size; i++) {
                             sum = 0.0f;
-                            for (int j = 10 + i * 48; j < 30 + i * 48; j++) {
+                            for (int j = 5 + i * Config.SAMPLE_PER_BIT; j < 15 + i * Config.SAMPLE_PER_BIT; j++) {
                                 sum += data_signal_remove_carrier[j];
                             }
 
