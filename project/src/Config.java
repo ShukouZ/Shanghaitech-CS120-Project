@@ -136,5 +136,5 @@ public class Config {
 	public final static int ID_SIZE = 6;
 	public final static int SAMPLE_PER_BIT = 24;
 	public final static int CHECK_SIZE = 8;
-	public final static int SAMPLE_SIZE = SAMPLE_PER_BIT*(FRAME_SIZE + ID_SIZE + CHECK_SIZE) + preamble.length;
+	public final static int SAMPLE_SIZE = SAMPLE_PER_BIT*(FRAME_SIZE + ID_SIZE + CHECK_SIZE);
 }
