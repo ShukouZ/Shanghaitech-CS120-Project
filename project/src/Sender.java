@@ -44,9 +44,10 @@ public class Sender {
         ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
 
         // compute frame buffer size
+        int data_size = 10000;
         int crc_length = Config.CHECK_SIZE;
         int frame_size = Config.FRAME_SIZE;
-        int frame_num = 10000 / frame_size;
+        int frame_num = data_size / frame_size;
         int zero_buffer_length = 100;
         List<Integer> frame;
         List<Integer> crc_code;
@@ -62,8 +63,15 @@ public class Sender {
             track1.addAll(Arrays.asList(Config.preamble));
 
             // modulation
-            frame = frame_data.subList(i*frame_size, i*frame_size+frame_size);
-            float[] frame_wave = new float[48*(frame_size+crc_length)];
+            frame = new ArrayList<>(Config.FRAME_SIZE + Config.ID_SIZE);
+
+            int bit;
+            for(int n = 0; n < Config.ID_SIZE; n++){
+                bit = (i & (1 << n)) >> n;
+                frame.add(bit);
+            }
+            frame.addAll(frame_data.subList(i * frame_size, i * frame_size + frame_size));
+            float[] frame_wave = new float[48*(frame_num+frame_size+crc_length)];
 
             //// calculate crc8
             crc_code = CRC8.get_crc8(frame);
@@ -86,7 +94,7 @@ public class Sender {
                 track1.add(v);
 
             // add zero buffer2
-            for (int j = 0; j < zero_buffer_length; j++){
+            for (int j = 0; j < zero_buffer_length+412; j++){
                 track1.add(0.0f);
             }
 
