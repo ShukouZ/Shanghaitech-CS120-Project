@@ -82,9 +82,9 @@ public class Sender {
                     frame_wave[j*48+k] = carrier.get(j*48+k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
-            for(int j=frame_size; j<frame_size + crc_length; ++j){
+            for(int j=frame_size+Config.ID_SIZE; j<frame_size + Config.ID_SIZE + crc_length; ++j){
                 for(int k=0; k<48; ++k){
-                    frame_wave[j*48+k] = carrier.get(j*48+k) * (crc_code.get(j - frame_size)*2-1); //  baud rate 48/48000 = 1000bps
+                    frame_wave[j*48+k] = carrier.get(j*48+k) * (crc_code.get(j-frame_size-Config.ID_SIZE)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
 

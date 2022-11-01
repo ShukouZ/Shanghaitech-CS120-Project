@@ -132,24 +132,12 @@ public class AudioHw implements AsioDriverListener {
 			{
 				System.arraycopy(input, start_index + 1, new_frame, 0, Config.HW_BUFFER_SIZE - start_index - 1);
 				frame_stored_size = Config.HW_BUFFER_SIZE - start_index - 1;
-				System.out.println(frame_recorded_num + ": " + start_index);
 			}
 			else
 			{
 				frame_stored_size = 0;
 			}
 		}
-
-//		if (start_index == 0){
-//			System.out.println("0>>>>>>>>>>>>>> "+frame_recorded_num);
-//		}if (start_index == 511){
-//			System.out.println("511>>>>>>>>>>>>>> "+frame_recorded_num);
-//		}if (start_index == 1){
-//			System.out.println("1>>>>>>>>>>>>>> "+frame_recorded_num);
-//		}if (start_index == 510){
-//			System.out.println("510>>>>>>>>>>>>>> "+frame_recorded_num);
-//		}
-
 	}
 
 	@Override
