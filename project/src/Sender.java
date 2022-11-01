@@ -50,7 +50,6 @@ public class Sender {
         int crc_length = Config.CHECK_SIZE;
         int frame_size = Config.FRAME_SIZE;
         int frame_num = data_size / frame_size;
-        int zero_buffer_length = 100;
         List<Integer> frame;
         List<Integer> crc_code;
 
@@ -70,7 +69,7 @@ public class Sender {
                 frame.add(bit);
             }
             frame.addAll(frame_data.subList(i * frame_size, i * frame_size + frame_size));
-            float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame_num+frame_size+crc_length)];
+            float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(Config.ID_SIZE+frame_size+crc_length)];
 
             //// calculate crc8
             crc_code = CRC8.get_crc8(frame);
@@ -87,21 +86,16 @@ public class Sender {
                 }
             }
 
-
             // add frame to track
             for (float v : frame_wave)
                 track1.add(v);
 
-            // add zero buffer2
-            for (int j = 0; j < Config.HW_BUFFER_SIZE; j++){
-                track1.add(0.0f);
-            }
             System.out.println("Send Idx:"+i+"\twith size:"+track1.size());
             System.out.println();
             audioHw.PHYSend(track1);
 
             try {
-                Thread.sleep(350);  // ms
+                Thread.sleep(400);  // ms
             } catch (final InterruptedException e) {
                 e.printStackTrace();
             }
