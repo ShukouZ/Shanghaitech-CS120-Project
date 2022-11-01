@@ -18,7 +18,7 @@ public class AudioHw implements AsioDriverListener {
 
 	private float[] output;
 	private float[] input;
-	List<Float> syncFIFO = new ArrayList<>();
+	myQueue syncFIFO = new myQueue(Config.preamble.length);
 	private float syncPower_localMax;
 
 	private boolean frameDetected;
@@ -67,9 +67,6 @@ public class AudioHw implements AsioDriverListener {
 			frameDetected = false;
 			frame_recorded_num = 0;
 
-			for(int i=0; i<Config.preamble.length; ++i){
-				syncFIFO.add(0.0f);
-			}
 
 			asioDriver.setSampleRate(Config.PHY_TX_SAMPLING_RATE);
 			/*
@@ -111,22 +108,16 @@ public class AudioHw implements AsioDriverListener {
 	// If not detected, return -1.
 	// If detected, set frameDetected to true, return the start index.
 	private void detectPreamble(){
-		float sum, syncPower_debug, current_sample;
+		float syncPower_debug, current_sample;
 		int start_index=-1;
 		for(int i=0; i<Config.HW_BUFFER_SIZE; i++) {
 			current_sample=input[i];
 
-			syncFIFO.remove(0);
 			syncFIFO.add(current_sample);
 
-			sum = 0.0f;
-			for (int j = 0; j < Config.preamble.length; j++) {
-				sum += syncFIFO.get(j) * Config.preamble[j];
-			}
+			syncPower_debug = syncFIFO.dot_product(Config.preamble);
 
-			syncPower_debug = sum / 200.0f;
-
-			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 0.2f)) {
+			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 9.0f)) {
 				syncPower_localMax = syncPower_debug;
 				start_index = i;
 				break;
@@ -182,7 +173,6 @@ public class AudioHw implements AsioDriverListener {
 							frame_table.get(frame_table.size()-1)[frame_stored_size] = input_data;
 							frame_stored_size += 1;
 						}else{
-							syncFIFO.remove(0);
 							syncFIFO.add(input_data);
 						}
 					}
@@ -201,6 +191,7 @@ public class AudioHw implements AsioDriverListener {
 			frame_stored_size=0;
 			frame_recorded_num++;
 			frameDetected=false;
+//			detectPreamble();
 		}
 
 	}

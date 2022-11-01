@@ -23,7 +23,7 @@ public class myQueue {
         }
     }
 
-    public float dot_product(float[] preamble){
+    public float dot_product(Float[] preamble){
         int idx;
         float sum = 0.0f;
         for(int i=0; i<size; i++){
