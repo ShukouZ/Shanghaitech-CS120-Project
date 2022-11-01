@@ -117,7 +117,7 @@ public class AudioHw implements AsioDriverListener {
 
 			syncPower_debug = syncFIFO.dot_product(Config.preamble);
 
-			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 9.0f)) {
+			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 10.0f)) {
 				syncPower_localMax = syncPower_debug;
 				start_index = i;
 				break;
@@ -179,7 +179,8 @@ public class AudioHw implements AsioDriverListener {
 			frame_stored_size=0;
 			frame_recorded_num++;
 			frameDetected=false;
-//			detectPreamble();
+			syncFIFO.clear();
+			detectPreamble();
 		}
 
 	}

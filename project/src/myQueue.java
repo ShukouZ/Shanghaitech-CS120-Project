@@ -23,6 +23,12 @@ public class myQueue {
         }
     }
 
+    public void clear(){
+        Arrays.fill(queue, 0);
+        head = 0;
+        tail = size-1;
+    }
+
     public float dot_product(Float[] preamble){
         int idx;
         float sum = 0.0f;

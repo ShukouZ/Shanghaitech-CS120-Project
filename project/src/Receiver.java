@@ -35,7 +35,7 @@ public class Receiver {
                 decoded_data_foreach.clear();
                 for (int i = 0; i < data_size; i++) {
                     sum = 0.0f;
-                    for (int j = 5 + i * Config.SAMPLE_PER_BIT; j < 15 + i * Config.SAMPLE_PER_BIT; j++) {
+                    for (int j = 5 + i * Config.SAMPLE_PER_BIT; j < (i + 1) * Config.SAMPLE_PER_BIT - 5; j++) {
                         sum += data_signal_remove_carrier[j];
                     }
 
@@ -50,9 +50,15 @@ public class Receiver {
                 List<Integer> transmitted_crc = decoded_data_foreach.subList(Config.FRAME_SIZE + Config.ID_SIZE, data_size);
                 List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, Config.FRAME_SIZE + Config.ID_SIZE));
 
+                int id = 0;
+
+                for (int n = 0; n < Config.ID_SIZE; n++)
+                {
+                    id += decoded_data_foreach.subList(0, Config.ID_SIZE).get(n) << n;
+                }
 
                 if(!transmitted_crc.equals(calculated_crc)){
-                    System.out.println("CRC check fails at idx = " + frame_decoded_num);
+                    System.out.println("CRC check fails at idx = " + id);
                     boolean correct = false;
                     int offset;
                     for(offset = 1; offset < 97; offset++)
@@ -66,7 +72,7 @@ public class Receiver {
                         decoded_data_foreach.clear();
                         for (int i = 0; i < data_size; i++) {
                             sum = 0.0f;
-                            for (int j = 5 + i * Config.SAMPLE_PER_BIT; j < 15 + i * Config.SAMPLE_PER_BIT; j++) {
+                            for (int j = 5 + i * Config.SAMPLE_PER_BIT; j < (i + 1) * Config.SAMPLE_PER_BIT - 5; j++) {
                                 sum += data_signal_remove_carrier[j];
                             }
 
@@ -88,22 +94,17 @@ public class Receiver {
                         }
                     }
                     if(correct){
-                        System.out.println("Fixed idx = " + frame_decoded_num + " with offset = " + offset);
+                        System.out.println("Fixed idx = " + id + " with offset = " + offset);
                     }
                     else{
-                        System.out.println("Couldn't fix idx = " + frame_decoded_num);
+                        System.out.println("Couldn't fix idx = " + id);
                     }
                 }
 //                else
 //                {
 //                    System.out.println("CRC correct at idx = " + frame_decoded_num);
 //                }
-                int id = 0;
 
-                for (int n = 0; n < Config.ID_SIZE; n++)
-                {
-                    id += decoded_data_foreach.subList(0, Config.ID_SIZE).get(n) << n;
-                }
 
 
                 System.out.println("Received: " + id);
