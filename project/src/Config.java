@@ -121,7 +121,7 @@ public class Config {
 	 */
 	
 	public final static byte MAC_ADDR = (byte) 0x1;
-	public final static int MAC_ACK_BYTE = 7;
+	public final static int MAC_ACK_BYTE = 6;
 	public final static int MAC_ACK_DURATION = MAC_ACK_BYTE*8*PHY_RX_SAMPLES_PER_SYMBOL*1000/PHY_TX_SAMPLING_RATE;
 	public final static int MAC_TIMEOUT = MAC_ACK_BYTE*8*PHY_RX_SAMPLES_PER_SYMBOL*1000/PHY_TX_SAMPLING_RATE+8+2*PHY_HWLATENCY;
 	
@@ -136,4 +136,7 @@ public class Config {
 	public final static int ID_SIZE = 6;
 	public final static int SAMPLE_SIZE = 13884;
 	public final static int CHECK_SIZE = 8;
+
+	public final static int SAMPLE_PER_BIT = 24;
+
 }
