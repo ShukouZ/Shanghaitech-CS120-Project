@@ -14,7 +14,7 @@ public class Receiver {
 
         int frame_decoded_num = 0;
         float[] data_signal;
-        int data_size = (Config.FRAME_SIZE+Config.CHECK_SIZE);
+        int data_size = (Config.FRAME_SIZE+Config.CHECK_SIZE+Config.ID_SIZE);
         float[] data_signal_remove_carrier = new float[48 * data_size];
         ArrayList<Integer> decoded_data = new ArrayList<>(10000);
         ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
@@ -46,8 +46,8 @@ public class Receiver {
                 }
 
                 // check crc code
-                List<Integer> transmitted_crc = decoded_data_foreach.subList(Config.FRAME_SIZE, data_size);
-                List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, Config.FRAME_SIZE));
+                List<Integer> transmitted_crc = decoded_data_foreach.subList(Config.FRAME_SIZE + Config.ID_SIZE, data_size);
+                List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, Config.FRAME_SIZE + Config.ID_SIZE));
 
 
                 if(!transmitted_crc.equals(calculated_crc)){
@@ -77,8 +77,8 @@ public class Receiver {
                         }
 
                         // check crc code
-                        transmitted_crc = decoded_data_foreach.subList(Config.FRAME_SIZE, data_size);
-                        calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, Config.FRAME_SIZE));
+                        transmitted_crc = decoded_data_foreach.subList(Config.FRAME_SIZE + Config.ID_SIZE, data_size);
+                        calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, Config.FRAME_SIZE + Config.ID_SIZE));
 
 
                         if (transmitted_crc.equals(calculated_crc)) {
@@ -92,25 +92,21 @@ public class Receiver {
                     else{
                         System.out.println("Couldn't fix idx = " + frame_decoded_num);
                     }
-
-
-//                    try {
-//                        FileWriter writer = new FileWriter("src/failed" + frame_decoded_num + ".txt");
-//                        for (float sample : data_signal) {
-//                            writer.write(String.valueOf(sample));
-//                            writer.write("\n");
-//                        }
-//                        writer.close();
-//                    }catch (Exception e){
-//                        System.out.println("Cannot read file.");
-//                    }
                 }
 //                else
 //                {
 //                    System.out.println("CRC correct at idx = " + frame_decoded_num);
 //                }
+                int id = 0;
 
-                decoded_data.addAll(decoded_data_foreach.subList(0, Config.FRAME_SIZE));
+                for (int n = 0; n < Config.ID_SIZE; n++)
+                {
+                    id += decoded_data_foreach.subList(0, Config.ID_SIZE).get(n) << n;
+                }
+
+
+                System.out.println("Received: " + id);
+                decoded_data.addAll(decoded_data_foreach.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE));
                 frame_decoded_num++;
 
             }catch (ArrayIndexOutOfBoundsException e){
