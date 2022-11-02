@@ -125,6 +125,7 @@ public class AudioHw implements AsioDriverListener {
 		}
 		if(start_index != -1){
 			frameDetected = true;
+			System.out.println(syncPower_localMax);
 			syncPower_localMax = 0;
 			float[] new_frame = new float[Config.SAMPLE_SIZE];
 			frame_table.add(new_frame);

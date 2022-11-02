@@ -18,8 +18,8 @@ public class SinWave {
     public ArrayList<Float> sample(int num){
         ArrayList<Float> samples = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-            phase = phase + dphase;
             samples.add((float) (Math.sin((double) phase)));
+            phase = phase + dphase;
         }
         return samples;
     }

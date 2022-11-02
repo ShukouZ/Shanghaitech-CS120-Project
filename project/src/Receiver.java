@@ -13,6 +13,10 @@ public class Receiver {
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
         ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
 
+//        for (Float i : carrier){
+//            System.out.println(i);
+//        }
+
         int frame_decoded_num = 0;
         float[] data_signal;
         int data_size = (Config.FRAME_SIZE+Config.CHECK_SIZE+Config.ID_SIZE);
@@ -29,19 +33,23 @@ public class Receiver {
                 // remove carrier
                 for (int i = 0; i < Config.SAMPLE_PER_BIT * data_size; i++) {
                     data_signal_remove_carrier[i] = data_signal[i] * carrier.get(i);
+//                    data_signal_remove_carrier[i] = data_signal[i];
                 }
 
                 // decode
                 decoded_data_foreach.clear();
                 for (int i = 0; i < data_size; i++) {
                     sum = 0.0f;
-                    for (int j = 5 + i * Config.SAMPLE_PER_BIT; j < (i + 1) * Config.SAMPLE_PER_BIT - 5; j++) {
+                    for (int j = i * Config.SAMPLE_PER_BIT; j < (i + 1) * Config.SAMPLE_PER_BIT; j++) {
                         sum += data_signal_remove_carrier[j];
                     }
-
+//                    sum /= Config.SAMPLE_PER_BIT - 10;
+//                    System.out.println(i + ":");
                     if (sum > 0.0f) {
+//                        System.out.println("Average: " + sum + " decode 1");
                         decoded_data_foreach.add(1);
                     } else {
+//                        System.out.println("Average: " + sum + " decode 0");
                         decoded_data_foreach.add(0);
                     }
                 }
@@ -61,18 +69,19 @@ public class Receiver {
                     System.out.println("CRC check fails at idx = " + id);
                     boolean correct = false;
                     int offset;
-                    for(offset = 1; offset < 97; offset++)
+                    for(offset = 1; offset < 8; offset++)
                     {
                         // remove carrier
                         for (int i = 0; i < Config.SAMPLE_PER_BIT * data_size; i++) {
                             data_signal_remove_carrier[i] = data_signal[i] * carrier.get(i + offset);
+//                            data_signal_remove_carrier[i] = data_signal[i];
                         }
 
                         // decode
                         decoded_data_foreach.clear();
                         for (int i = 0; i < data_size; i++) {
                             sum = 0.0f;
-                            for (int j = 5 + i * Config.SAMPLE_PER_BIT; j < (i + 1) * Config.SAMPLE_PER_BIT - 5; j++) {
+                            for (int j = i * Config.SAMPLE_PER_BIT; j < (i + 1) * Config.SAMPLE_PER_BIT; j++) {
                                 sum += data_signal_remove_carrier[j];
                             }
 
@@ -100,10 +109,6 @@ public class Receiver {
                         System.out.println("Couldn't fix idx = " + id);
                     }
                 }
-//                else
-//                {
-//                    System.out.println("CRC correct at idx = " + frame_decoded_num);
-//                }
 
 
 
