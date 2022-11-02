@@ -107,10 +107,10 @@ public class AudioHw implements AsioDriverListener {
 	// Detect preamble.
 	// If not detected, return -1.
 	// If detected, set frameDetected to true, return the start index.
-	private void detectPreamble(){
+	private void detectPreamble(int start_point){
 		float syncPower_debug, current_sample;
 		int start_index=-1;
-		for(int i=0; i<Config.HW_BUFFER_SIZE; i++) {
+		for(int i=start_point; i<Config.HW_BUFFER_SIZE; i++) {
 			current_sample=input[i];
 
 			syncFIFO.add(current_sample);
@@ -125,7 +125,6 @@ public class AudioHw implements AsioDriverListener {
 		}
 		if(start_index != -1){
 			frameDetected = true;
-			System.out.println(syncPower_localMax);
 			syncPower_localMax = 0;
 			float[] new_frame = new float[Config.SAMPLE_SIZE];
 			frame_table.add(new_frame);
@@ -152,22 +151,27 @@ public class AudioHw implements AsioDriverListener {
 			}
 		}
 
-
 		for (AsioChannel channelInfo : channels) {
 			if (channelInfo.isInput()){
 				channelInfo.read(input);
 				if(frameDetected) {
-					for(float input_data: input){
+					for(int id = 0; id < Config.HW_BUFFER_SIZE; id++){
+						float input_data = input[id];
 						if(frame_stored_size < Config.SAMPLE_SIZE){
 							frame_table.get(frame_table.size()-1)[frame_stored_size] = input_data;
 							frame_stored_size += 1;
 						}else{
-							syncFIFO.add(input_data);
+							frame_stored_size=0;
+							frame_recorded_num++;
+							frameDetected=false;
+							syncFIFO.clear();
+							detectPreamble(id);
+							break;
 						}
 					}
 
 				}else{
-					detectPreamble();
+					detectPreamble(0);
 				}
 			}
 			else {
@@ -176,14 +180,6 @@ public class AudioHw implements AsioDriverListener {
 
 
 		}
-		if (frame_stored_size == Config.SAMPLE_SIZE){
-			frame_stored_size=0;
-			frame_recorded_num++;
-			frameDetected=false;
-			syncFIFO.clear();
-			detectPreamble();
-		}
-
 	}
 
 	@Override
