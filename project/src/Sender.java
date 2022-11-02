@@ -77,12 +77,14 @@ public class Sender {
 
             for(int j=0; j<frame.size(); ++j){
                 for(int k = 0; k< Config.SAMPLE_PER_BIT; ++k){
-                    frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
+//                    frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
+                    frame_wave[j* Config.SAMPLE_PER_BIT +k] = (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
             for(int j=frame_size+Config.ID_SIZE; j<frame_size + Config.ID_SIZE + crc_length; ++j){
                 for(int k = 0; k< Config.SAMPLE_PER_BIT; ++k){
-                    frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (crc_code.get(j-frame_size-Config.ID_SIZE)*2-1); //  baud rate 48/48000 = 1000bps
+//                    frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (crc_code.get(j-frame_size-Config.ID_SIZE)*2-1); //  baud rate 48/48000 = 1000bps
+                    frame_wave[j* Config.SAMPLE_PER_BIT +k] = (crc_code.get(j-frame_size-Config.ID_SIZE)*2-1); //  baud rate 48/48000 = 1000bps
                 }
             }
 
@@ -95,17 +97,11 @@ public class Sender {
             audioHw.PHYSend(track1);
 
             try {
-                Thread.sleep(400);  // ms
+                Thread.sleep(70);  // ms
             } catch (final InterruptedException e) {
                 e.printStackTrace();
             }
 
-            new Thread() {
-                @Override
-                public void run() {
-
-                }
-            }.start();
 
         }
 
