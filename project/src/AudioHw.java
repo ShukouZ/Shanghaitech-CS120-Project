@@ -3,29 +3,31 @@ import java.util.*;
 import com.synthbot.jasiohost.*;
 
 public class AudioHw implements AsioDriverListener {
-	// 0 for speaking
-	// 1 for recording
-	// 2 for both
-	private int mode;
-
+	// hardware
 	private AsioDriver asioDriver;
 	private Set<AsioChannel> activeChannels;
-	
+
 	private AsioChannel outputChannel;
 	private AsioChannel inputChannel;
 
+	// soundtrack
 	private ArrayList<Float> playList;
 
+	// IO buffer
 	private float[] output;
 	private float[] input;
+
+	// MAC state machine
+	private int state;
+
+	// for preamble use
 	myQueue syncFIFO = new myQueue(Config.preamble.length);
 	private float syncPower_localMax;
 
-	private boolean frameDetected;
-
+	// frame detection
+	private Boolean frameDetected;
 	private ArrayList<float[]> frame_table;
 	private int frame_stored_size;
-
 	private int frame_recorded_num;
 
 	private int playLoc;
@@ -34,11 +36,12 @@ public class AudioHw implements AsioDriverListener {
 		activeChannels = new HashSet<AsioChannel>();  // create a Set of AsioChannels
 
 		if (asioDriver == null) {
+			// init IO channels
+			activeChannels = new HashSet<>();
 			asioDriver = AsioDriver.getDriver("ASIO4ALL v2");
-			asioDriver.addAsioDriverListener(this);   // add an AsioDriverListener in order to receive callbacks from the driver
-
+			asioDriver.addAsioDriverListener(this);
 			System.out.println("------------------");
-
+			//// Output
 			System.out.println("Output Channels");
 			for (int i = 0; i < asioDriver.getNumChannelsOutput(); i++) {
 				System.out.println(asioDriver.getChannelOutput(i));
@@ -47,39 +50,28 @@ public class AudioHw implements AsioDriverListener {
 			output = new float[Config.HW_BUFFER_SIZE];
 			activeChannels.add(outputChannel);
 			playList = new ArrayList<>();
-
-
-
+			//// Input
 			System.out.println("Input Channels");
 			for (int i = 0; i < asioDriver.getNumChannelsInput(); i++) {
 				System.out.println(asioDriver.getChannelInput(i));
 			}
-
 			inputChannel = asioDriver.getChannelInput(0);
-
 			input = new float[Config.HW_BUFFER_SIZE];
 			activeChannels.add(inputChannel);
-			frame_table = new ArrayList<>();
-			frame_stored_size = 0;
-			syncPower_localMax = 0.0f;
 
-			playLoc = 0;
-			frameDetected = false;
-			frame_recorded_num = 0;
-
-
+			// asioDriver settings
 			asioDriver.setSampleRate(Config.PHY_TX_SAMPLING_RATE);
-			/*
-			 * buffer size should be set either by modifying the JAsioHost source code or
-			 * configuring the preferred value in ASIO native window. We choose 128 i.e.,
-			 * asioDriver.getBufferPreferredSize() should be equal to Config.HW_BUFFER_SIZE
-			 * = 128;
-			 * 
-			 */
-
 			asioDriver.createBuffers(activeChannels);  // create the audio buffers and prepare the driver to run
 			System.out.println("ASIO buffer created, size: " + asioDriver.getBufferPreferredSize());
 
+			// frame detection
+			frameDetected = false;
+			syncPower_localMax = 0.0f;
+			frame_table = new ArrayList<>();
+			frame_stored_size = 0;
+			frame_recorded_num = 0;
+
+			playLoc = 0;
 		}
 	}
 
@@ -93,11 +85,6 @@ public class AudioHw implements AsioDriverListener {
 	public void stop() {
 		asioDriver.returnToState(AsioDriverState.INITIALIZED);
 		asioDriver.shutdownAndUnloadDriver();  // tear everything down
-//		for(float[] buffer : recorded){
-//			for(float i : buffer){
-//				System.out.print(i + " ");
-//			}
-//		}
 	}
 
 	public void PHYSend(ArrayList<Float> track){
