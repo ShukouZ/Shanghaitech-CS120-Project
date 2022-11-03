@@ -56,10 +56,10 @@ public class Sender {
 
         // add preamble and frame, each frame has 100 bits
         for(int i=0; i<frame_num; ++i){
-//            track1.clear();
-
             // add preamble
             track1.addAll(Arrays.asList(Config.preamble));
+
+            for(int j=0; j<4; j++)            track1.add(1.0f);
 
             // modulation
             frame = new ArrayList<>(Config.FRAME_SIZE + Config.ID_SIZE);
@@ -91,9 +91,9 @@ public class Sender {
             for (float v : frame_wave)
                 track1.add(v);
 
-
+            // zero buffer
+            for (int j=0; j<10; j++)   track1.add(0.0f);
         }
-//        System.out.println("Send Idx:"+i+"\twith size:"+track1.size());
         System.out.println("Track size:"+track1.size());
         System.out.println();
         audioHw.PHYSend(track1);
