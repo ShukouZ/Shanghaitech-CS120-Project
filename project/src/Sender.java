@@ -56,7 +56,8 @@ public class Sender {
 
         // add preamble and frame, each frame has 100 bits
         for(int i=0; i<frame_num; ++i){
-            track1.clear();
+//            track1.clear();
+
             // add preamble
             track1.addAll(Arrays.asList(Config.preamble));
 
@@ -90,17 +91,17 @@ public class Sender {
             for (float v : frame_wave)
                 track1.add(v);
 
-            System.out.println("Send Idx:"+i+"\twith size:"+track1.size());
-            System.out.println();
-            audioHw.PHYSend(track1);
 
-            try {
-                Thread.sleep(70);  // ms
-            } catch (final InterruptedException e) {
-                e.printStackTrace();
-            }
+        }
+//        System.out.println("Send Idx:"+i+"\twith size:"+track1.size());
+        System.out.println("Track size:"+track1.size());
+        System.out.println();
+        audioHw.PHYSend(track1);
 
-
+        try {
+            Thread.sleep(2000);  // ms
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
         }
 
 
