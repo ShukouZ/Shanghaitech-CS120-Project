@@ -29,6 +29,7 @@ public class AudioHw implements AsioDriverListener {
 	private ArrayList<float[]> frame_table;
 	private int frame_stored_size;
 	private int frame_recorded_num;
+	private float length;
 
 	private int playLoc;
 
@@ -70,6 +71,7 @@ public class AudioHw implements AsioDriverListener {
 			frame_table = new ArrayList<>();
 			frame_stored_size = 0;
 			frame_recorded_num = 0;
+			length = 0;
 
 			playLoc = 0;
 		}
@@ -113,7 +115,7 @@ public class AudioHw implements AsioDriverListener {
 		if(start_index != -1){
 			frameDetected = true;
 			syncPower_localMax = 0;
-			float[] new_frame = new float[Config.SAMPLE_SIZE];
+			float[] new_frame = new float[Config.SAMPLE_SIZE + 8];
 			frame_table.add(new_frame);
 			if(start_index != Config.HW_BUFFER_SIZE - 1)
 			{
@@ -144,13 +146,28 @@ public class AudioHw implements AsioDriverListener {
 				if(frameDetected) {
 					for(int id = 0; id < Config.HW_BUFFER_SIZE; id++){
 						float input_data = input[id];
-						if(frame_stored_size < Config.SAMPLE_SIZE){
+						if(frame_stored_size < Config.SAMPLE_SIZE + 8){
+
+							if (frame_stored_size >= 4 && length == 0){
+								for (int len_id = 0; len_id < 4; len_id++){
+									length += frame_table.get(frame_table.size()-1)[len_id];
+								}
+								if (length > 0){
+									System.out.println(frame_recorded_num + " frame length");
+								}
+								else {
+									System.out.println(frame_recorded_num + " ack length");
+								}
+
+							}
+
 							frame_table.get(frame_table.size()-1)[frame_stored_size] = input_data;
 							frame_stored_size += 1;
 						}else{
 							frame_stored_size=0;
 							frame_recorded_num++;
 							frameDetected=false;
+							length = 0;
 							syncFIFO.clear();
 							detectPreamble(id);
 							break;

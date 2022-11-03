@@ -28,7 +28,7 @@ public class Receiver {
 
                 // remove carrier
                 for (int i = 0; i < Config.SAMPLE_PER_BIT * data_size; i++) {
-                    data_signal_remove_carrier[i] = data_signal[i] * carrier.get(i);
+                    data_signal_remove_carrier[i] = data_signal[i + 4] * carrier.get(i);
                 }
 
                 // decode
@@ -61,11 +61,11 @@ public class Receiver {
                     System.out.println("CRC check fails at idx = " + id);
                     boolean correct = false;
                     int offset;
-                    for(offset = 1; offset < 8; offset++)
+                    for(offset = 0; offset < 8; offset++)
                     {
                         // remove carrier
                         for (int i = 0; i < Config.SAMPLE_PER_BIT * data_size; i++) {
-                            data_signal_remove_carrier[i] = data_signal[i] * carrier.get(i + offset);
+                            data_signal_remove_carrier[i] = data_signal[i + offset] * carrier.get(i);
                         }
 
                         // decode
