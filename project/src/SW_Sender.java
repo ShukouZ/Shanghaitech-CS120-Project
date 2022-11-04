@@ -5,18 +5,18 @@ import java.util.stream.Collectors;
 
 public class SW_Sender {
     // send window size
-    private int window_size;
+    private final int window_size;
     // last ACK received
     private int LAR;
-    private int frame_size;
+    private final int frame_size;
     private final ArrayList<Float> carrier;
-    private ArrayList<ArrayList<Float>> track_list;
+    private final ArrayList<ArrayList<Float>> track_list;
     public boolean[] ACKList;
     private final int[] sendedList;
 
     private final AudioHw audioHw;
 
-    private int millsPerFrame;
+    private final int millsPerFrame;
 
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame){
         // get 6250 bytes of data
