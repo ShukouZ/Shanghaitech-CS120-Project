@@ -13,9 +13,12 @@ public class DecodeThread extends Thread {
     private final float[] data_signal_remove_carrier = new float[Config.SAMPLE_PER_BIT * data_size];
     private final ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
 
-    DecodeThread(AudioHw _audioHw){
+    private final SW_Receiver receiver;
+
+    DecodeThread(AudioHw _audioHw, SW_Receiver _receiver){
         running = true;
         audioHw = _audioHw;
+        receiver = _receiver;
 
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
@@ -96,14 +99,17 @@ public class DecodeThread extends Thread {
                     System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
                 }
                 else {
+                    int id = get_block_id(decoded_block_data);
                     if (decoded_block_data.size() == Config.ID_SIZE + Config.CRC_SIZE) {
                         // ACK
-                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + get_block_id(decoded_block_data));
+                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
                         ACKList[get_block_id(decoded_block_data)] = true;
                     } else {
-                        System.out.println("Data block " + frame_decoded_num + " received data: " + get_block_id(decoded_block_data));
+
+                        System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // TODO: write data
-                        decoded_data.addAll(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE));
+                        receiver.storeFrame(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE), id);
+//                        decoded_data.addAll(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE));
                     }
                 }
 
@@ -112,18 +118,18 @@ public class DecodeThread extends Thread {
 
             Thread.yield();
         }
-
-        System.out.println(decoded_data.size() + " bits received.");
-
-        try {
-            FileWriter writer = new FileWriter("src/OUTPUT.txt");
-            for (Integer decoded_datum : decoded_data) {
-                writer.write(String.valueOf(decoded_datum));
-            }
-            writer.close();
-        }catch (Exception e){
-            System.out.println("Cannot read file.");
-        }
+//
+//        System.out.println(decoded_data.size() + " bits received.");
+//
+//        try {
+//            FileWriter writer = new FileWriter("src/OUTPUT.txt");
+//            for (Integer decoded_datum : decoded_data) {
+//                writer.write(String.valueOf(decoded_datum));
+//            }
+//            writer.close();
+//        }catch (Exception e){
+//            System.out.println("Cannot read file.");
+//        }
     }
 
     public void setACKList(boolean[] ackList){

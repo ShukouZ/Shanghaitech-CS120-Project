@@ -5,10 +5,12 @@ public class Receiver {
         audioHw.init();
         audioHw.start();
 
-        DecodeThread decodeThread  = new DecodeThread(audioHw);
+        SW_Receiver receiver = new SW_Receiver(audioHw);
+
+        DecodeThread decodeThread  = new DecodeThread(audioHw, receiver);
         decodeThread.start();
         try {
-            Thread.sleep(10000);  // ms
+            Thread.sleep(15000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
