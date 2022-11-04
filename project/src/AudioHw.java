@@ -157,11 +157,11 @@ public class AudioHw implements AsioDriverListener {
 									length += frame_table.get(frame_table.size()-1).get(len_id);
 								}
 								if (length > 0){
-									System.out.println(frame_recorded_num + " frame length " + length);
+//									System.out.println(frame_recorded_num + " frame length " + length);
 									max_record_num = Config.FRAME_SAMPLE_SIZE + 8;
 								}
 								else {
-									System.out.println(frame_recorded_num + " ack length " + length);
+//									System.out.println(frame_recorded_num + " ack length " + length);
 									max_record_num = Config.ACK_SAMPLE_SIZE + 8;
 								}
 
@@ -234,7 +234,7 @@ public class AudioHw implements AsioDriverListener {
 		}
 		else
 		{
-			throw new ArrayIndexOutOfBoundsException();
+			return null;
 		}
 	}
 }
