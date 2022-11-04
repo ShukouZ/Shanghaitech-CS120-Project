@@ -23,7 +23,6 @@ public class DecodeThread extends Thread {
     }
 
     private ArrayList<Integer> decodeFrame(ArrayList<Float> data_signal, int offset){
-
         float sum;
         int size;
         if (data_signal.size() == Config.FRAME_SAMPLE_SIZE + 8){
@@ -77,9 +76,6 @@ public class DecodeThread extends Thread {
 
     @Override
     public void run(){
-
-
-
         int frame_decoded_num = 0;
         ArrayList<Float> data_signal;
         ArrayList<Integer> decoded_data = new ArrayList<>();
