@@ -135,4 +135,6 @@ public class Config {
 	public final static int ACK_SIZE = ID_SIZE + CRC_SIZE;
 	public final static int FRAME_SAMPLE_SIZE = SAMPLE_PER_BIT*(FRAME_SIZE + ID_SIZE + CRC_SIZE);
 	public final static int ACK_SAMPLE_SIZE = SAMPLE_PER_BIT*(ACK_SIZE) + HW_BUFFER_SIZE;
+
+	public final static int FILE_BYTES = 6250;
 }
