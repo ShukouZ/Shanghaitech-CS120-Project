@@ -110,11 +110,7 @@ public class DecodeThread extends Thread {
                 frame_decoded_num++;
             }
 
-            try {
-                Thread.sleep(0);  // ms
-            } catch (final InterruptedException e) {
-                e.printStackTrace();
-            }
+            Thread.yield();
         }
 
         System.out.println(decoded_data.size() + " bits received.");
