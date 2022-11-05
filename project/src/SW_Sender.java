@@ -34,7 +34,7 @@ public class SW_Sender {
         frame_num = data.size() / Config.FRAME_SIZE;
         track_list = new ArrayList<>();
         for (int i = 0; i< frame_num; i++){
-            track_list.add(frameToTrack(data.subList(i*Config.FRAME_SIZE, (i+1)*Config.FRAME_SIZE), i+2));
+            track_list.add(frameToTrack(data.subList(i*Config.FRAME_SIZE, (i+1)*Config.FRAME_SIZE), i+2, false));
         }
 
         // init the audio driver
@@ -104,7 +104,7 @@ public class SW_Sender {
 
 
 
-    static float[] frameToTrack(List<Integer> frame_data, int idx){
+    static float[] frameToTrack(List<Integer> frame_data, int idx, boolean isASK){
         // initialization
         List<Integer> frame;
         int zero_buffer_len = 10;
@@ -112,8 +112,14 @@ public class SW_Sender {
         float[] track = new float[Config.preamble.length + 4 + Config.FRAME_SAMPLE_SIZE + zero_buffer_len];
         System.arraycopy(Config.preamble, 0, track, 0, Config.preamble.length);
         // add length flag for frame data
-        for(int j=0; j<4; j++)
-            track[Config.preamble.length+j] = 1.0f;
+        if(isASK){
+            for(int j=0; j<4; j++)
+                track[Config.preamble.length+j] = -1.0f;
+        }else{
+            for(int j=0; j<4; j++)
+                track[Config.preamble.length+j] = 1.0f;
+        }
+
         // add frame data
         //// modulation
         frame = new ArrayList<>(Config.FRAME_SIZE + Config.ID_SIZE);
