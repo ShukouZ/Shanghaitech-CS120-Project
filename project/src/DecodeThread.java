@@ -75,7 +75,7 @@ public class DecodeThread extends Thread {
         {
             id += block.get(n) << n;
         }
-        return id;
+        return id - 2;
     }
 
 
@@ -105,7 +105,7 @@ public class DecodeThread extends Thread {
                     if (decoded_block_data.size() == Config.ID_SIZE) {
                         // ACK
                         System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
-                        ACKList[get_block_id(decoded_block_data)] = true;
+                        ACKList[id] = true;
                     } else {
 
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
