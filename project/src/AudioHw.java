@@ -92,7 +92,9 @@ public class AudioHw implements AsioDriverListener {
 	}
 
 	public void PHYSend(float[] track){
-		while (playList != null && playLoc < playList.length){}
+		while (playList != null && playLoc < playList.length){
+			Thread.yield();
+		}
 
 		playList = track;
 		playLoc = 0;

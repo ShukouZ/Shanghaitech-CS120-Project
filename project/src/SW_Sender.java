@@ -63,30 +63,23 @@ public class SW_Sender {
                 return;
             }
             // send data
-            for(int i=LAR+1; i<LAR+1+window_size && i<frame_num-1; i++){
-                //  too many retransmissions
-                if((sendedList[i] > Config.MAC_RETRY_LIMIT)){
-                    LAR += 1;
-                    System.out.println("G");
-                    return;
-                }
+            for(int i=LAR+1; i<LAR+1+window_size && i<frame_num; i++){
+
                 // whether to send soundtrack
-                if(!ACKList[i] && ((int)System.currentTimeMillis()-window_timeTable[i]) >= 1000){
-                    audioHw.PHYSend(track_list.get(i));
+                if(!ACKList[i] && ((int)System.currentTimeMillis()-window_timeTable[i]) >= 100){
                     sendedList[i] += 1;
+                    //  too many retransmissions
+                    if((sendedList[i] > Config.MAC_RETRY_LIMIT)){
+                        System.out.println("\tG: "+i);
+                        return;
+                    }
+                    audioHw.PHYSend(track_list.get(i));
                     // record the time to send frame
                     window_timeTable[i] = (int)System.currentTimeMillis();
                     System.out.println("Track "+(i+1)+" with size: "+track_list.get(i).length+" with LAR: "+LAR);
                 }
-                try{
-                    Thread.sleep(50);
-                }catch(Exception e) {
-                    e.printStackTrace();
-                }
                 updateLAR();
-
             }
-            Thread.yield();
         }
 
     }
