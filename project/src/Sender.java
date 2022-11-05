@@ -18,11 +18,13 @@ public class Sender {
         audioHw.start();
 
         DecodeThread decodeThread = new DecodeThread(audioHw, null);
-        SW_Sender sender = new SW_Sender("src/INPUT.bin", 10, audioHw, 50);
+        SW_Sender sender = new SW_Sender("src/INPUT.bin", 15, audioHw, 50);
         decodeThread.setACKList(sender.getACKList());
         decodeThread.start();
-
+        long t1 = System.currentTimeMillis();
         sender.sendWindowedFrame();
+        long t2 = System.currentTimeMillis();
+        System.out.println("Time passed: "+(t2-t1)+"ms.");
 
         decodeThread.stopDecoding();
         audioHw.stop();
