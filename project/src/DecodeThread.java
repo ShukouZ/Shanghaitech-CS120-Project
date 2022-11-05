@@ -30,11 +30,11 @@ public class DecodeThread extends Thread {
         int size;
         if (data_signal.size() == Config.FRAME_SAMPLE_SIZE + 8){
             size = data_size;
-            System.out.println("Frame");
+//            System.out.println("Frame");
         }
         else {
             size = (Config.CRC_SIZE + Config.ID_SIZE);
-            System.out.println("ACK");
+//            System.out.println("ACK");
         }
 
         // decode frame
@@ -75,7 +75,7 @@ public class DecodeThread extends Thread {
         {
             id += block.get(n) << n;
         }
-        return id - 2;
+        return id;
     }
 
 
@@ -108,9 +108,9 @@ public class DecodeThread extends Thread {
                         ACKList[id] = true;
                     } else {
 
-                        System.out.println("Data block " + frame_decoded_num + " received data: " + id);
+                        System.out.println("Data block " + frame_decoded_num + " received data: " + (id - 2));
                         // TODO: write data
-                        receiver.storeFrame(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE), id);
+                        receiver.storeFrame(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE), id - 2);
 //                        decoded_data.addAll(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE));
                     }
                 }
