@@ -9,7 +9,10 @@ public class SW_Sender {
     // last ACK received
     private int LAR;
     private final int frame_num;
-    private static ArrayList<Float> carrier = null;
+
+    // generate carrier
+    private static SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
+    private static ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
     private final ArrayList<float[]> track_list;
     public boolean[] ACKList;
     private final int[] sendedList;

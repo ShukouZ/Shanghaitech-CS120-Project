@@ -35,6 +35,7 @@ public class SW_Receiver {
     public void sendACK(int id){
         float[] track = SW_Sender.frameToTrack(null, id);
         audioHw.PHYSend(track);
+        System.out.println("Send ACK: " + id);
     }
 
     public void writeFile(){
