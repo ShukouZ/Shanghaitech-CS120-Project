@@ -25,6 +25,11 @@ public class Sender {
         sender.sendWindowedFrame();
         long t2 = System.currentTimeMillis();
         System.out.println("Time passed: "+(t2-t1)+"ms.");
+        boolean[] a = sender.getACKList();
+        for (int i =0; i<a.length;i++){
+            if(!a[i])
+                System.out.println("idx="+(i+1));
+        }
 
         decodeThread.stopDecoding();
         audioHw.stop();

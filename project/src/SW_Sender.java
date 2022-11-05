@@ -70,8 +70,8 @@ public class SW_Sender {
                     }
 
                     if (!ACKList[i] && ((int) System.currentTimeMillis() - window_timeTable[i]) >= 200) {
-                        if((int) System.currentTimeMillis() - window_timeTable[i] >= 300){
-                            System.out.println("OUT OF TIME, idx = "+(i+1));
+                        if((window_timeTable[i]!=0) && ((int) System.currentTimeMillis() - window_timeTable[i] >= 200)){
+                            System.out.println("OUT OF TIME, idx = "+(i));
                         }
                         sendedList[i] += 1;
                         //  too many retransmissions
@@ -83,9 +83,9 @@ public class SW_Sender {
                         // record the time to send frame
                         window_timeTable[i] = (int) System.currentTimeMillis();
                     }
-//                    updateLAR();
+                    updateLAR();
                 }
-                System.out.println("Track " + (i + 1) + " with size: " + track_list.get(i).length + " with LAR: " + LAR);
+//                System.out.println("Track " + (i + 1) + " with size: " + track_list.get(i).length + " with LAR: " + LAR);
                 try{
                     Thread.sleep(10);
                 }catch(Exception e){
