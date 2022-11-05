@@ -11,7 +11,7 @@ public class AudioHw implements AsioDriverListener {
 	private AsioChannel inputChannel;
 
 	// soundtrack
-	private ArrayList<Float> playList;
+	private float[] playList;
 
 	// IO buffer
 	private float[] output;
@@ -51,7 +51,7 @@ public class AudioHw implements AsioDriverListener {
 			outputChannel = asioDriver.getChannelOutput(0);
 			output = new float[Config.HW_BUFFER_SIZE];
 			activeChannels.add(outputChannel);
-			playList = new ArrayList<>();
+			playList = null;
 			//// Input
 			System.out.println("Input Channels");
 			for (int i = 0; i < asioDriver.getNumChannelsInput(); i++) {
@@ -91,8 +91,11 @@ public class AudioHw implements AsioDriverListener {
 		asioDriver.shutdownAndUnloadDriver();  // tear everything down
 	}
 
-	public void PHYSend(ArrayList<Float> track){
-		playList.addAll(track);
+	public void PHYSend(float[] track){
+		while (playList != null && playLoc < playList.length){}
+
+		playList = track;
+		playLoc = 0;
 	}
 
 	// Detect preamble.
@@ -136,10 +139,11 @@ public class AudioHw implements AsioDriverListener {
 	@Override
 	public void bufferSwitch(final long systemTime, final long samplePosition, final Set<AsioChannel> channels) {
 		for (int i = 0; i < Config.HW_BUFFER_SIZE; i++) {
-			try {
-				output[i] = playList.get(playLoc);
+			if (playList != null && playLoc < playList.length){
+				output[i] = playList[playLoc];
 				playLoc++;
-			}catch (final IndexOutOfBoundsException e) {
+			}
+			else {
 				output[i] = 0.0f;
 			}
 		}
