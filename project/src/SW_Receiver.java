@@ -27,8 +27,11 @@ public class SW_Receiver {
     }
 
     public void storeFrame(List<Integer> frame_data, int id){
-        ArrayList<Integer> new_frame_data = new ArrayList<>(frame_data);
-        frame_list.set(id, new_frame_data);
+        if (frame_list.get(id) == null){
+            ArrayList<Integer> new_frame_data = new ArrayList<>(frame_data.size());
+            new_frame_data.addAll(frame_data);
+            frame_list.set(id, new_frame_data);
+        }
         sendACK(id);
     }
 
@@ -41,7 +44,7 @@ public class SW_Receiver {
     public void writeFile(){
         byte[] output = new byte[Config.FILE_BYTES * 8];
         for (int i = 0; i < Config.FILE_BYTES * 8; i++){
-            int frame_id = i % Config.FILE_BYTES;
+            int frame_id = i / Config.FILE_BYTES;
             ArrayList<Integer> frame = frame_list.get(frame_id);
             if (frame != null){
                 for (int datum : frame){
