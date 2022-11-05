@@ -30,10 +30,6 @@ public class SW_Sender {
         // get 6250*8 bits of data
         ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(byte_data)).boxed().collect(Collectors.toList());
 
-        // generate carrier
-        SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
-        carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
-
         // generate soundtrack for each frame
         frame_num = data.size() / Config.FRAME_SIZE;
         track_list = new ArrayList<>();
