@@ -17,8 +17,14 @@ public class Sender {
         audioHw.init();
         audioHw.start();
 
+        DecodeThread decodeThread = new DecodeThread(audioHw, null);
         SW_Sender sender = new SW_Sender("src/INPUT.bin", 10, audioHw, 50);
+        decodeThread.setACKList(sender.getACKList());
+        decodeThread.start();
+
         sender.sendWindowedFrame();
+
+        decodeThread.stopDecoding();
         audioHw.stop();
     }
 }

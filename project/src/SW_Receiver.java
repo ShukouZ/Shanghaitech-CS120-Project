@@ -33,32 +33,7 @@ public class SW_Receiver {
     }
 
     public void sendACK(int id){
-        ArrayList<Integer> frame = new ArrayList<>();
-
-        frame = new ArrayList<>(Config.ID_SIZE);
-        ArrayList<Float> track = new ArrayList<>(Arrays.asList(Config.preamble));
-        for(int j=0; j<4; j++)            track.add(-1.0f);
-
-        int _bit;
-        for(int n = 0; n < Config.ID_SIZE; n++){
-            _bit = (id & (1 << n)) >> n;
-            frame.add(_bit);
-        }
-        float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame.size()+Config.CRC_SIZE)];
-        List<Integer> crc_code = CRC8.get_crc8(frame);
-        for(int j=0; j<frame.size(); ++j){
-            for(int k = 0; k< Config.SAMPLE_PER_BIT; ++k){
-                frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (frame.get(j)*2-1); //  baud rate 48/48000 = 1000bps
-            }
-        }
-        for(int j=frame.size(); j<frame.size() + Config.CRC_SIZE; ++j){
-            for(int k = 0; k< Config.SAMPLE_PER_BIT; ++k){
-                frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (crc_code.get(j-frame.size())*2-1); //  baud rate 48/48000 = 1000bps
-            }
-        }
-        for (float v : frame_wave)
-            track.add(v);
-
+        float[] track = SW_Sender.frameToTrack(null, id);
         audioHw.PHYSend(track);
     }
 

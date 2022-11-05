@@ -29,7 +29,7 @@ public class myQueue {
         tail = size-1;
     }
 
-    public float dot_product(Float[] preamble){
+    public float dot_product(float[] preamble){
         int idx;
         float sum = 0.0f;
         for(int i=0; i<size; i++){
