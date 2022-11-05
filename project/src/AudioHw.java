@@ -113,7 +113,7 @@ public class AudioHw implements AsioDriverListener {
 
 			syncPower_debug = syncFIFO.dot_product(Config.preamble);
 
-			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 30.0f)) {
+			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 28.0f)) {
 				syncPower_localMax = syncPower_debug;
 				start_index = i;
 				break;

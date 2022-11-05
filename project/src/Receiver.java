@@ -6,6 +6,9 @@ public class Receiver {
         audioHw.start();
 
         SW_Receiver receiver = new SW_Receiver(audioHw);
+//        for (int i = 0; i < 100; i++) {
+//            receiver.sendACK(i);
+//        }
 
         DecodeThread decodeThread  = new DecodeThread(audioHw, receiver);
         decodeThread.start();

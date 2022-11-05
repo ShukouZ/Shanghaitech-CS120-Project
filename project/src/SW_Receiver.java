@@ -53,7 +53,7 @@ public class SW_Receiver {
             }
         }
 
-        Util.outputbits(output, Config.FILE_BYTES * 8);
+        Util.outputbits(output, output.length);
     }
 
 }
