@@ -8,19 +8,22 @@ public class SW_Sender {
     private final int window_size;
     // last ACK received
     private int LAR;
-    private final int frame_size;
-    private final ArrayList<Float> carrier;
-    private final ArrayList<ArrayList<Float>> track_list;
+    private final int frame_num;
+    private static ArrayList<Float> carrier = null;
+    private final ArrayList<float[]> track_list;
     public boolean[] ACKList;
     private final int[] sendedList;
 
     private final AudioHw audioHw;
 
-    private final int millsPerFrame;
+    private final int millisPerFrame;
+
+    // !!NOTE: consider DICT
+    private final int[] window_timeTable;
 
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame){
         // get 6250 bytes of data
-        byte[] byte_data = Util.readFileByBytes(filePath, 6250);
+        byte[] byte_data = Util.readFileByBytes(filePath, Config.FILE_BYTES);
         // get 6250*8 bits of data
         ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(byte_data)).boxed().collect(Collectors.toList());
 
@@ -29,47 +32,63 @@ public class SW_Sender {
         carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
 
         // generate soundtrack for each frame
-        frame_size = data.size() / Config.FRAME_SIZE;
+        frame_num = data.size() / Config.FRAME_SIZE;
         track_list = new ArrayList<>();
-        for (int i=0; i<frame_size; i++){
-            track_list.add(frameToTrack(data.subList(i*Config.FRAME_SIZE, (i+1)*Config.FRAME_SIZE), i+1));
+        for (int i = 0; i< frame_num; i++){
+            track_list.add(frameToTrack(data.subList(i*Config.FRAME_SIZE, (i+1)*Config.FRAME_SIZE), i+2));
         }
 
         // init the audio driver
         audioHw = _audioHW;
 
-        // init window size
+        // init window
         window_size = _window_size;
-        LAR = 0;
-        //      xx  xx  xx  ............ xx
-        //       |  |--------------------|
-        //      LAR       window
+        LAR = -1;
+        window_timeTable = new int[frame_num];
+        Arrays.fill(window_timeTable, 0);
 
         // init ACK list and sended list
-        ACKList = new boolean[frame_size];
+        ACKList = new boolean[frame_num];
         Arrays.fill(ACKList, false);
-        sendedList = new int[frame_size];
+        sendedList = new int[frame_num];
         Arrays.fill(sendedList, 0);
 
         // set time for each frame
-        millsPerFrame = _millsPerFrame;
+        millisPerFrame = _millsPerFrame;
     }
 
     public void sendWindowedFrame(){
-        if (LAR == frame_size){
-            return;
-        }
-        for(int i=LAR; i<LAR+window_size && i < frame_size; i++){
-            audioHw.PHYSend(track_list.get(i));
-            try {
-                Thread.sleep(millsPerFrame);  // ms
-            } catch (final InterruptedException e) {
-                e.printStackTrace();
+        while(true){
+            if (LAR >= frame_num-1) {
+                return;
             }
-            System.out.println("Track "+(i+1)+" with size: "+track_list.get(i).size());
-            LAR+=1;
+            // send data
+            for(int i=LAR+1; i<LAR+1+window_size && i<frame_num-1; i++){
+                //  too many retransmissions
+                if((sendedList[i] > Config.MAC_RETRY_LIMIT)){
+                    LAR += 1;
+                    System.out.println("G");
+                    return;
+                }
+                // whether to send soundtrack
+                if(!ACKList[i] && ((int)System.currentTimeMillis()-window_timeTable[i]) >= 1000){
+                    audioHw.PHYSend(track_list.get(i));
+                    sendedList[i] += 1;
+                    // record the time to send frame
+                    window_timeTable[i] = (int)System.currentTimeMillis();
+                    System.out.println("Track "+(i+1)+" with size: "+track_list.get(i).length+" with LAR: "+LAR);
+                }
+                try{
+                    Thread.sleep(50);
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
+                updateLAR();
+
+            }
+            Thread.yield();
         }
-        sendWindowedFrame();
+
     }
 
     public boolean[] getACKList(){
@@ -81,7 +100,7 @@ public class SW_Sender {
     }
 
     public void updateLAR(){
-        for(int i=LAR; i<frame_size; i++){
+        for(int i = LAR+1; i< frame_num; i++){
             if(ACKList[i]){
                 LAR = i;
             }
@@ -93,15 +112,16 @@ public class SW_Sender {
 
 
 
-    private ArrayList<Float> frameToTrack(List<Integer> frame_data, int idx){
+    static float[] frameToTrack(List<Integer> frame_data, int idx){
         // initialization
         List<Integer> frame;
         int zero_buffer_len = 10;
         // add preamble
-        ArrayList<Float> track = new ArrayList<>(Arrays.asList(Config.preamble));
+        float[] track = new float[Config.preamble.length + 4 + Config.FRAME_SAMPLE_SIZE + zero_buffer_len];
+        System.arraycopy(Config.preamble, 0, track, 0, Config.preamble.length);
         // add length flag for frame data
         for(int j=0; j<4; j++)
-            track.add(1.0f);
+            track[Config.preamble.length+j] = 1.0f;
         // add frame data
         //// modulation
         frame = new ArrayList<>(Config.FRAME_SIZE + Config.ID_SIZE);
@@ -112,11 +132,24 @@ public class SW_Sender {
             frame.add(bit);
         }
         //// part2: add frame data
-        frame.addAll(frame_data);
+        if(frame_data != null) {
+            frame.addAll(frame_data);
+        }
         //// part3: cal CRC
         List<Integer> crc_code = CRC8.get_crc8(frame);
         //// part4: modulate
         float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame.size()+ Config.CRC_SIZE)];
+        modulate(frame, crc_code, frame_wave, carrier);
+
+        // add frame to track
+        System.arraycopy(frame_wave, 0, track, Config.preamble.length+4, frame_wave.length);
+        // zero buffer
+        for (int j=0; j<zero_buffer_len; j++)   track[Config.preamble.length+4+frame_wave.length+j] = 0.0f;
+
+        return track;
+    }
+
+    static void modulate(List<Integer> frame, List<Integer> crc_code, float[] frame_wave, ArrayList<Float> carrier) {
         for(int j=0; j<frame.size(); ++j){
             for(int k = 0; k< Config.SAMPLE_PER_BIT; ++k){
                 frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (frame.get(j)*2-1);
@@ -127,17 +160,7 @@ public class SW_Sender {
                 frame_wave[j* Config.SAMPLE_PER_BIT +k] = carrier.get(j* Config.SAMPLE_PER_BIT +k) * (crc_code.get(j-frame.size())*2-1);
             }
         }
-
-        // add frame to track
-        for (float v : frame_wave)
-            track.add(v);
-
-        // zero buffer
-        for (int j=0; j<zero_buffer_len; j++)   track.add(0.0f);
-
-        return track;
     }
-
 
 
 }
