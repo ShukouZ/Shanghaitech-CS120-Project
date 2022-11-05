@@ -30,9 +30,11 @@ public class DecodeThread extends Thread {
         int size;
         if (data_signal.size() == Config.FRAME_SAMPLE_SIZE + 8){
             size = data_size;
+            System.out.println("Frame");
         }
         else {
             size = (Config.CRC_SIZE + Config.ID_SIZE);
+            System.out.println("ACK");
         }
 
         // decode frame
@@ -100,7 +102,7 @@ public class DecodeThread extends Thread {
                 }
                 else {
                     int id = get_block_id(decoded_block_data);
-                    if (decoded_block_data.size() == Config.ID_SIZE + Config.CRC_SIZE) {
+                    if (decoded_block_data.size() == Config.ID_SIZE) {
                         // ACK
                         System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
                         ACKList[get_block_id(decoded_block_data)] = true;
