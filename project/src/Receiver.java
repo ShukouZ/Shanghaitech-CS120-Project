@@ -10,11 +10,12 @@ public class Receiver {
         DecodeThread decodeThread  = new DecodeThread(audioHw, receiver);
         decodeThread.start();
         try {
-            Thread.sleep(15000);  // ms
+            Thread.sleep(25000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
         decodeThread.stopDecoding();
+        receiver.writeFile();
         audioHw.stop();
     }
 }

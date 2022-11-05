@@ -27,12 +27,12 @@ public class SW_Receiver {
     }
 
     public void storeFrame(List<Integer> frame_data, int id){
+        sendACK(id);
         if (frame_list.get(id) == null){
             ArrayList<Integer> new_frame_data = new ArrayList<>(frame_data.size());
             new_frame_data.addAll(frame_data);
             frame_list.set(id, new_frame_data);
         }
-        sendACK(id);
     }
 
     public void sendACK(int id){

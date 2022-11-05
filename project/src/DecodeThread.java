@@ -110,7 +110,7 @@ public class DecodeThread extends Thread {
                         }
 
                     } else {
-                        id -= 2;
+                        id --;
                         if (id < 200) {
                             System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                             // write data
