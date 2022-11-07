@@ -60,7 +60,7 @@ public class DecodeThread extends Thread {
 
         // check crc code
         List<Integer> transmitted_crc = decoded_data_foreach.subList(size - Config.CRC_SIZE, size);
-        List<Integer> calculated_crc = CRC8.get_crc8(decoded_data_foreach.subList(0, size - Config.CRC_SIZE));
+        List<Integer> calculated_crc = CRC16.get_crc16(decoded_data_foreach.subList(0, size - Config.CRC_SIZE));
 
         if(!transmitted_crc.equals(calculated_crc)){
             return null;

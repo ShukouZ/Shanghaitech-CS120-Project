@@ -118,7 +118,7 @@ public class SW_Sender {
             frame.addAll(frame_data);
         }
         //// part3: cal CRC
-        List<Integer> crc_code = CRC8.get_crc8(frame);
+        List<Integer> crc_code = CRC16.get_crc16(frame);
         //// part4: modulate
         float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame.size()+ Config.CRC_SIZE)];
         // modulate

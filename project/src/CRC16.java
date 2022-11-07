@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 
 public class CRC16 {
     static byte[] auchCRCHi = {
@@ -33,17 +34,32 @@ public class CRC16 {
     };
 
 
-    private static int calcCrc16(byte[] data, int len) {
+    public static List<Integer> get_crc16(List<Integer> frame) {
+        byte[] data = Util.frameToBytes(frame);
+        int len = data.length;
         int uchCRCHi = 0xff;
         int uchCRCLo = 0xff;
         int uIndex;
 
-        for(int i=0;i<len;++i){
-            uIndex = (uchCRCHi ^ data[i]) & 0x00ff;
+        for (byte datum : data) {
+            uIndex = (uchCRCHi ^ datum) & 0x00ff;
             uchCRCHi = uchCRCLo ^ auchCRCHi[uIndex];
             uchCRCLo = auchCRCLo[uIndex];
         }
-        return ((uchCRCHi & 0x00ff) << 8)|(uchCRCLo & 0x00ff) & 0xffff;
+
+        int fcs = ((uchCRCHi & 0x00ff) << 8)|(uchCRCLo & 0x00ff) & 0xffff;
+
+        String crc_code = Integer.toString((char)(fcs),2);
+        char[] sum_char = crc_code.toCharArray();
+        int zero_buffer_num = 16-sum_char.length;
+        List<Integer> res = new ArrayList<>();
+        for(int i=0; i<zero_buffer_num; ++i){
+            res.add(0);
+        }
+        for(char c: sum_char){
+            res.add(Integer.parseInt((String.valueOf(c))));
+        }
+        return res;
     }
 
     public static void main(String[] args){
@@ -69,8 +85,7 @@ public class CRC16 {
         a.add(1);
 
 //        byte[] buffer = new byte[] {0x02, 0x05};
-        byte[] buffer = Util.frameToBytes(a);
-        int crc16 = calcCrc16(buffer,buffer.length);
-        System.out.println(String.format("0x%04x", crc16));//0x7c09
+        List<Integer> crc16 = get_crc16(a);
+        System.out.println(crc16);
     }
 }

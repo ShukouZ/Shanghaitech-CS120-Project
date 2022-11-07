@@ -3,6 +3,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import javax.sound.sampled.AudioFormat;
@@ -104,7 +105,7 @@ public class Util {
 		return (byte) re;
 	}
 
-	public static byte[] frameToBytes(ArrayList<Integer> frame){
+	public static byte[] frameToBytes(List<Integer> frame){
 		StringBuilder s = new StringBuilder();
 		for(int datum: frame){
 			s.append(datum);
