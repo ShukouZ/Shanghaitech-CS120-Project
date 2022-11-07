@@ -104,12 +104,16 @@ public class Util {
 		return (byte) re;
 	}
 
-	public static String frameToString(ArrayList<Integer> frame){
+	public static byte[] frameToBytes(ArrayList<Integer> frame){
 		StringBuilder s = new StringBuilder();
 		for(int datum: frame){
 			s.append(datum);
 		}
-		return s.toString();
+		byte[] bytes = new byte[s.length() / 8];
+		for (int i = 0; i < s.length() / 8; i++) {
+			bytes[i] = Util.BitToByte(s.substring(i*8,(i+1)*8));
+		}
+		return bytes;
 	}
 	public static void writeFileByBytes(byte[] bytes, String filename) {
 		try {
