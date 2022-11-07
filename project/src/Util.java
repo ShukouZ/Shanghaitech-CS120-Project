@@ -1,6 +1,7 @@
 // Borrowed from https://github.com/youcunhan/CS120ComputerNetwork/blob/master/CS120ComputerNetwork-proj2/Util.java
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
@@ -103,6 +104,13 @@ public class Util {
 		return (byte) re;
 	}
 
+	public static String frameToString(ArrayList<Integer> frame){
+		StringBuilder s = new StringBuilder();
+		for(int datum: frame){
+			s.append(datum);
+		}
+		return s.toString();
+	}
 	public static void writeFileByBytes(byte[] bytes, String filename) {
 		try {
 			DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(filename)));
@@ -138,5 +146,7 @@ public class Util {
 		Util.writeFileByBytes(databytes, "INPUT2to1.bin");
 		
 	}
+
+
 
 }

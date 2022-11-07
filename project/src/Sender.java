@@ -4,12 +4,12 @@ public class Sender {
         audioHw.init();
         audioHw.start();
 
-        SW_Sender sender = new SW_Sender("src/INPUT.bin", 15, audioHw, 50);
+        SW_Sender sender = new SW_Sender("src/INPUT.bin", 15, audioHw, 40);
         DecodeThread decodeThread = new DecodeThread(audioHw, null, sender);
 
         decodeThread.start();
-        macperf macperf_thread = new macperf(sender);
-        macperf_thread.start();
+//        macperf macperf_thread = new macperf(sender);
+//        macperf_thread.start();
 
         long t1 = System.currentTimeMillis();
         sender.sendWindowedFrame();
@@ -17,7 +17,7 @@ public class Sender {
         System.out.println("Time passed: "+(t2-t1)+"ms.");
 
         decodeThread.stopDecoding();
-        macperf_thread.stop_running();
+//        macperf_thread.stop_running();
         audioHw.stop();
     }
 }
