@@ -1,4 +1,3 @@
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -6,7 +5,6 @@ public class DecodeThread extends Thread {
     private boolean running;
     private final AudioHw audioHw;
 
-    private boolean[] ACKList;
     private final int data_size = (Config.FRAME_SIZE+Config.CRC_SIZE +Config.ID_SIZE);
 
     private final ArrayList<Float> carrier;
@@ -85,7 +83,6 @@ public class DecodeThread extends Thread {
     public void run(){
         int frame_decoded_num = 0;
         ArrayList<Float> data_signal;
-        ArrayList<Integer> decoded_data = new ArrayList<>();
         ArrayList<Integer> decoded_block_data;
 
         while (running) {
@@ -127,23 +124,8 @@ public class DecodeThread extends Thread {
 
             Thread.yield();
         }
-//
-//        System.out.println(decoded_data.size() + " bits received.");
-//
-//        try {
-//            FileWriter writer = new FileWriter("src/OUTPUT.txt");
-//            for (Integer decoded_datum : decoded_data) {
-//                writer.write(String.valueOf(decoded_datum));
-//            }
-//            writer.close();
-//        }catch (Exception e){
-//            System.out.println("Cannot read file.");
-//        }
     }
 
-    public void setACKList(boolean[] ackList){
-        ACKList = ackList;
-    }
 
     public void stopDecoding(){
         running = false;
