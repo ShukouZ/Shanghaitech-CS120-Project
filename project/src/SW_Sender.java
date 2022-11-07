@@ -62,6 +62,10 @@ public class SW_Sender {
             current_frame = LAR + 1;
             while ((int)System.currentTimeMillis() - window_timer < 1000){
                 if (current_frame <= LAR + window_size){
+                    if (sendedList[current_frame] > Config.MAC_RETRY_LIMIT){
+                        System.out.println(current_frame + " reached retry limit.");
+                        System.out.println("Stop sending.");
+                    }
                     audioHw.PHYSend(track_list.get(current_frame));
                     sendedList[current_frame] ++;
                     current_frame ++;
