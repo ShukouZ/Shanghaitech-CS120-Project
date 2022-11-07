@@ -14,11 +14,13 @@ public class DecodeThread extends Thread {
     private final ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
 
     private final SW_Receiver receiver;
+    private final SW_Sender sender;
 
-    DecodeThread(AudioHw _audioHw, SW_Receiver _receiver){
+    DecodeThread(AudioHw _audioHw, SW_Receiver _receiver, SW_Sender _sender){
         running = true;
         audioHw = _audioHw;
         receiver = _receiver;
+        sender = _sender;
 
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
@@ -106,7 +108,7 @@ public class DecodeThread extends Thread {
                         if (id < 200) {
                             // ACK
                             System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
-                            ACKList[id] = true;
+                            sender.receiveACK(id);
                         }
 
                     } else {

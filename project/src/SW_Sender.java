@@ -22,7 +22,8 @@ public class SW_Sender {
     private final int millisPerFrame;
 
     // !!NOTE: consider DICT
-    private final int[] window_timeTable;
+    private int window_timer;
+
 
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame){
         // get 6250 bytes of data
@@ -43,8 +44,7 @@ public class SW_Sender {
         // init window
         window_size = _window_size;
         LAR = -1;
-        window_timeTable = new int[frame_num];
-        Arrays.fill(window_timeTable, 0);
+        window_timer = 0;
 
         // init ACK list and sended list
         ACKList = new boolean[frame_num];
@@ -57,42 +57,17 @@ public class SW_Sender {
     }
 
     public void sendWindowedFrame(){
-        while(true){
-            if (LAR >= frame_num-1) {
-                return;
-            }
-            // send data
-            for(int i=LAR+1; i<LAR+1+window_size && i<frame_num; i++){
-                synchronized(ACKList) {// whether to send soundtrack
-                    if (i == LAR+1 && ACKList[i]){
-                        LAR += 1;
-                        continue;
-                    }
-
-                    if (!ACKList[i] && ((int) System.currentTimeMillis() - window_timeTable[i]) >= 200) {
-                        if((window_timeTable[i]!=0) && ((int) System.currentTimeMillis() - window_timeTable[i] >= 200)){
-                            System.out.println("OUT OF TIME, idx = "+(i));
-                        }
-                        sendedList[i] += 1;
-                        //  too many retransmissions
-                        if ((sendedList[i] > Config.MAC_RETRY_LIMIT)) {
-                            System.out.println("\tG: idx=" + (i+1));
-                            return;
-                        }
-                        audioHw.PHYSend(track_list.get(i));
-                        // record the time to send frame
-                        window_timeTable[i] = (int) System.currentTimeMillis();
-                    }
-                    updateLAR();
-                }
-//                System.out.println("Track " + (i + 1) + " with size: " + track_list.get(i).length + " with LAR: " + LAR);
-                try{
-                    Thread.sleep(10);
-                }catch(Exception e){
-                    e.printStackTrace();
+        int current_frame = -1;
+        while(current_frame < frame_num - 1){
+            current_frame = LAR + 1;
+            while ((int)System.currentTimeMillis() - window_timer < 1000){
+                if (current_frame <= LAR + window_size){
+                    audioHw.PHYSend(track_list.get(current_frame));
+                    sendedList[current_frame] ++;
+                    current_frame ++;
                 }
             }
-
+            window_timer = (int)System.currentTimeMillis();
         }
     }
 
@@ -100,16 +75,21 @@ public class SW_Sender {
         return ACKList;
     }
 
+    public void receiveACK(int id){
+        if(id > LAR && id <= LAR+window_size) {
+            LAR = id;
+            window_timer = (int)System.currentTimeMillis();
+        }
+    }
+
     public void setACKList(boolean[] _ACKList){
         ACKList = _ACKList;
     }
 
     public void updateLAR(){
-        for(int i = LAR+1; i< frame_num; i++){
-            if(ACKList[i]){
+        for (int i=LAR+window_size; i>LAR; i--){
+            if (ACKList[i]){
                 LAR = i;
-            }
-            else{
                 break;
             }
         }

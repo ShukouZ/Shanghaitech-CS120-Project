@@ -17,10 +17,14 @@ public class Sender {
         audioHw.init();
         audioHw.start();
 
-        DecodeThread decodeThread = new DecodeThread(audioHw, null);
         SW_Sender sender = new SW_Sender("src/INPUT.bin", 15, audioHw, 50);
+        DecodeThread decodeThread = new DecodeThread(audioHw, null, sender);
+
         decodeThread.setACKList(sender.getACKList());
         decodeThread.start();
+        macperf macperf_thread = new macperf(sender.getACKList());
+        macperf_thread.start();
+
         long t1 = System.currentTimeMillis();
         sender.sendWindowedFrame();
         long t2 = System.currentTimeMillis();
@@ -32,6 +36,41 @@ public class Sender {
         }
 
         decodeThread.stopDecoding();
+        macperf_thread.stop_running();
         audioHw.stop();
+    }
+}
+
+class macperf extends Thread{
+    private boolean[] ACKList;
+    int frame_num = 0;
+    boolean running = true;
+
+    macperf(boolean[] ackList){
+        ACKList = ackList;
+    }
+    @Override
+    public void run(){
+        while (running)
+        {
+            int new_frame_num = 0;
+            for (boolean i : ACKList) {
+                if (i) {
+                    new_frame_num++;
+                }
+            }
+
+            System.out.println("Speed: " + ((new_frame_num - frame_num) / 4.0f) + "kbps");
+            frame_num = new_frame_num;
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void stop_running(){
+        running = false;
     }
 }
