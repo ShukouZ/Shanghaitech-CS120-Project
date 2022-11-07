@@ -102,20 +102,16 @@ public class DecodeThread extends Thread {
                 else {
                     int id = get_block_id(decoded_block_data);
                     if (decoded_block_data.size() == Config.ID_SIZE) {
-                        if (id < 200) {
-                            // ACK
-                            System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
-                            sender.receiveACK(id);
-                        }
-
+                        // ACK
+                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
+                        sender.receiveACK(id);
                     } else {
                         id --;
-                        if (id < 200) {
-                            System.out.println("Data block " + frame_decoded_num + " received data: " + id);
-                            // write data
-                            receiver.storeFrame(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE), id);
+                        System.out.println("Data block " + frame_decoded_num + " received data: " + id);
+                        // write data
+                        receiver.storeFrame(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE), id);
 //                        decoded_data.addAll(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE));
-                        }
+
                     }
                 }
 
