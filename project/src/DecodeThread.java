@@ -133,6 +133,7 @@ public class DecodeThread extends Thread {
                     {
                         type += decoded_block_data.get(Config.DEST_SIZE + Config.SRC_SIZE + i) << i;
                     }
+                    System.out.println("type: " + type);
 
                     // get id
                     int id = 0;
@@ -140,6 +141,7 @@ public class DecodeThread extends Thread {
                     {
                         id += decoded_block_data.get(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + i) << i;
                     }
+                    System.out.println("id: " + id);
 
                     if (type == Config.TYPE_ACK) {
                         // ACK
