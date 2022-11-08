@@ -17,7 +17,6 @@ public class SW_Receiver {
     }
 
     public void storeFrame(List<Integer> frame_data, int id){
-        sendACK();
         if (id == frame_list.size()){
             ArrayList<Integer> new_frame_data = new ArrayList<>(frame_data.size());
             new_frame_data.addAll(frame_data);
@@ -25,9 +24,9 @@ public class SW_Receiver {
         }
     }
 
-    public void sendACK(){
+    public void sendACK(int dest, int src){
         int id = frame_list.size();
-        float[] track = SW_Sender.frameToTrack(null, id, true);
+        float[] track = SW_Sender.frameToTrack(null, dest, src, Config.TYPE_ACK, id, true);
         audioHw.PHYSend(track);
         System.out.println("Send ACK: " + id);
     }

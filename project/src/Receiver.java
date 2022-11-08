@@ -10,7 +10,7 @@ public class Receiver {
 //            receiver.sendACK(i);
 //        }
 
-        DecodeThread decodeThread  = new DecodeThread(audioHw, receiver, null);
+        DecodeThread decodeThread  = new DecodeThread(audioHw, receiver, null, Config.NODE_2_CODE);
         decodeThread.start();
         try {
             Thread.sleep(25000);  // ms

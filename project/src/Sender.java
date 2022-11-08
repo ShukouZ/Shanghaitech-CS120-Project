@@ -9,7 +9,7 @@ public class Sender {
                                         40,
                                         Config.NODE_2_CODE,
                                         Config.NODE_1_CODE);
-        DecodeThread decodeThread = new DecodeThread(audioHw, null, sender);
+        DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
 
         decodeThread.start();
 //        macperf macperf_thread = new macperf(sender);
