@@ -115,7 +115,7 @@ public class DecodeThread extends Thread {
                     }
 
                     if (dest != node_id) {
-                        System.out.println("dest: " + dest);
+//                        System.out.println("dest: " + dest);
                         continue;
                     }
 
@@ -123,9 +123,9 @@ public class DecodeThread extends Thread {
                     int src = 0;
                     for (int i = 0; i < Config.SRC_SIZE; i++)
                     {
-                        dest += decoded_block_data.get(Config.DEST_SIZE + i) << i;
+                        src += decoded_block_data.get(Config.DEST_SIZE + i) << i;
                     }
-                    System.out.println("src: " + src);
+//                    System.out.println("src: " + src);
 
                     // get type
                     int type = 0;
@@ -133,7 +133,7 @@ public class DecodeThread extends Thread {
                     {
                         type += decoded_block_data.get(Config.DEST_SIZE + Config.SRC_SIZE + i) << i;
                     }
-                    System.out.println("type: " + type);
+//                    System.out.println("type: " + type);
 
                     // get id
                     int id = 0;
@@ -141,7 +141,7 @@ public class DecodeThread extends Thread {
                     {
                         id += decoded_block_data.get(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + i) << i;
                     }
-                    System.out.println("id: " + id);
+//                    System.out.println("id: " + id);
 
                     if (type == Config.TYPE_ACK) {
                         // ACK
