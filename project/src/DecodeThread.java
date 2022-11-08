@@ -114,7 +114,10 @@ public class DecodeThread extends Thread {
                         dest += decoded_block_data.get(i) << i;
                     }
 
-                    if (dest != node_id) continue;
+                    if (dest != node_id) {
+                        System.out.println("dest: " + dest);
+                        continue;
+                    }
 
                     // get src
                     int src = 0;
@@ -122,6 +125,7 @@ public class DecodeThread extends Thread {
                     {
                         dest += decoded_block_data.get(Config.DEST_SIZE + i) << i;
                     }
+                    System.out.println("src: " + src);
 
                     // get type
                     int type = 0;
