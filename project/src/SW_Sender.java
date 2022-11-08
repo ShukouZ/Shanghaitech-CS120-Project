@@ -104,7 +104,7 @@ public class SW_Sender {
             len_data = 1.0f;
         }
         // add preamble
-        float[] track = new float[track_size];
+        float[] track = new float[track_size+zero_buffer_len];
         System.arraycopy(Config.preamble, 0, track, 0, Config.preamble.length);
         // add length flag for frame data
         for(int j=0; j<4; j++)
@@ -154,9 +154,9 @@ public class SW_Sender {
             }
         }
         // add frame to track
-        System.arraycopy(frame_wave, 0, track, Config.preamble.length+4, frame_wave.length);
+        System.arraycopy(frame_wave, 0, track, Config.preamble.length + Config.LEN_SIZE, frame_wave.length);
         // zero buffer
-        for (int j=0; j<zero_buffer_len; j++)   track[Config.preamble.length+4+frame_wave.length+j] = 0.0f;
+        for (int j=0; j<zero_buffer_len; j++)   track[track_size+j] = 0.0f;
 
         return track;
     }
