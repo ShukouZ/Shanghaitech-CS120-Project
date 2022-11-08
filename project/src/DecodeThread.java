@@ -95,7 +95,7 @@ public class DecodeThread extends Thread {
                 // find best start id by crc
                 decoded_block_data = decodeFrame(data_signal, 4);
                 if (decoded_block_data == null) {
-                    for (int offset = 0; offset < 8; offset++) {
+                    for (int offset = 0; offset < Config.MAX_OFFSET; offset++) {
                         decoded_block_data = decodeFrame(data_signal, offset);
                         if (decoded_block_data != null) break;
                     }
