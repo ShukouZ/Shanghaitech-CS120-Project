@@ -4,7 +4,11 @@ public class Sender {
         audioHw.init();
         audioHw.start();
 
-        SW_Sender sender = new SW_Sender("src/INPUT.bin", 15, audioHw, 40);
+        SW_Sender sender = new SW_Sender("src/INPUT.bin",
+                                        15, audioHw,
+                                        40,
+                                        Config.NODE_2_CODE,
+                                        Config.NODE_1_CODE);
         DecodeThread decodeThread = new DecodeThread(audioHw, null, sender);
 
         decodeThread.start();
@@ -37,7 +41,7 @@ class macperf extends Thread{
         {
             int new_frame_num = sender.LAR;
 
-            System.out.println("Speed: " + ((new_frame_num - frame_num) / 1000.0f * Config.FRAME_SIZE) + "kbps");
+            System.out.println("Speed: " + ((new_frame_num - frame_num) / 1000.0f * Config.PAYLOAD_SIZE) + "kbps");
             frame_num = new_frame_num;
             try {
                 Thread.sleep(1000);

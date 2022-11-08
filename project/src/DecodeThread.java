@@ -5,7 +5,7 @@ public class DecodeThread extends Thread {
     private boolean running;
     private final AudioHw audioHw;
 
-    private final int data_size = (Config.FRAME_SIZE+Config.CRC_SIZE +Config.ID_SIZE);
+    private final int data_size = (Config.PAYLOAD_SIZE +Config.CRC_SIZE +Config.SEQ_SIZE);
 
     private final ArrayList<Float> carrier;
     private final float[] data_signal_remove_carrier = new float[Config.SAMPLE_PER_BIT * data_size];
@@ -21,8 +21,8 @@ public class DecodeThread extends Thread {
         sender = _sender;
 
         // init the carrier
-        SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
-        carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
+        SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_SAMPLING_RATE);
+        carrier = wave.sample(Config.PHY_SAMPLING_RATE);
     }
 
     private ArrayList<Integer> decodeFrame(ArrayList<Float> data_signal, int offset){
@@ -33,7 +33,7 @@ public class DecodeThread extends Thread {
 //            System.out.println("Frame");
         }
         else {
-            size = (Config.CRC_SIZE + Config.ID_SIZE);
+            size = (Config.CRC_SIZE + Config.SEQ_SIZE);
 //            System.out.println("ACK");
         }
 
@@ -71,7 +71,7 @@ public class DecodeThread extends Thread {
 
     private int get_block_id(ArrayList<Integer> block){
         int id = 0;
-        for (int n = 0; n < Config.ID_SIZE; n++)
+        for (int n = 0; n < Config.SEQ_SIZE; n++)
         {
             id += block.get(n) << n;
         }
@@ -101,7 +101,7 @@ public class DecodeThread extends Thread {
                 }
                 else {
                     int id = get_block_id(decoded_block_data);
-                    if (decoded_block_data.size() == Config.ID_SIZE) {
+                    if (decoded_block_data.size() == Config.SEQ_SIZE) {
                         // ACK
                         System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
                         sender.receiveACK(id);
@@ -109,7 +109,7 @@ public class DecodeThread extends Thread {
                         id --;
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
-                        receiver.storeFrame(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE), id);
+                        receiver.storeFrame(decoded_block_data.subList(Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.SEQ_SIZE), id);
 //                        decoded_data.addAll(decoded_block_data.subList(Config.ID_SIZE, Config.FRAME_SIZE + Config.ID_SIZE));
 
                     }

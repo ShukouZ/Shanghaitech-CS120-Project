@@ -11,8 +11,8 @@ public class SW_Sender {
     private final int frame_num;
 
     // generate carrier
-    private static final SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_TX_SAMPLING_RATE);
-    private static final ArrayList<Float> carrier = wave.sample(Config.PHY_TX_SAMPLING_RATE);
+    private static final SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_SAMPLING_RATE);
+    private static final ArrayList<Float> carrier = wave.sample(Config.PHY_SAMPLING_RATE);
     private final ArrayList<float[]> track_list;
     private final int[] sentList;
 
@@ -23,17 +23,17 @@ public class SW_Sender {
     private int window_timer;
 
 
-    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame){
+    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int dest, int src){
         // get 6250 bytes of data
         byte[] byte_data = Util.readFileByBytes(filePath, Config.FILE_BYTES);
         // get 6250*8 bits of data
         ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(byte_data)).boxed().collect(Collectors.toList());
 
         // generate soundtrack for each frame
-        frame_num = data.size() / Config.FRAME_SIZE;
+        frame_num = data.size() / Config.PAYLOAD_SIZE;
         track_list = new ArrayList<>();
         for (int i = 0; i< frame_num; i++){
-            track_list.add(frameToTrack(data.subList(i*Config.FRAME_SIZE, (i+1)*Config.FRAME_SIZE), i+1, false));
+            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), dest, src, Config.TYPE_DATA, i+1, false));
         }
 
         // init the audio driver
@@ -88,36 +88,57 @@ public class SW_Sender {
 
 
 
-    static float[] frameToTrack(List<Integer> frame_data, int idx, boolean isASK){
+    static float[] frameToTrack(List<Integer> frame_data, int dest, int src, int type, int idx, boolean isASK){
         // initialization
         List<Integer> frame;
-        int zero_buffer_len = 10;
+        int zero_buffer_len;
+        int track_size;
+        float len_data;
+        if(isASK){
+            zero_buffer_len = Config.HW_BUFFER_SIZE;
+            track_size = Config.preamble.length + Config.LEN_SIZE + Config.ACK_SAMPLE_SIZE;
+            len_data = -1.0f;
+        }else{
+            zero_buffer_len = 10;
+            track_size = Config.preamble.length + Config.LEN_SIZE + Config.FRAME_SAMPLE_SIZE;
+            len_data = 1.0f;
+        }
         // add preamble
-        float[] track = new float[Config.preamble.length + 4 + Config.FRAME_SAMPLE_SIZE + zero_buffer_len];
+        float[] track = new float[track_size];
         System.arraycopy(Config.preamble, 0, track, 0, Config.preamble.length);
         // add length flag for frame data
-        if(isASK){
-            for(int j=0; j<4; j++)
-                track[Config.preamble.length+j] = -1.0f;
-        }else{
-            for(int j=0; j<4; j++)
-                track[Config.preamble.length+j] = 1.0f;
-        }
+        for(int j=0; j<4; j++)
+            track[Config.preamble.length+j] = len_data;
 
         // add frame data
         //// modulation
-        frame = new ArrayList<>(Config.FRAME_SIZE + Config.ID_SIZE);
-        //// part1: add idx
+        frame = new ArrayList<>();
+        //// part 1: add dest
         int bit;
-        for(int n = 0; n < Config.ID_SIZE; n++){
+        for(int n = 0; n < Config.DEST_SIZE; n++){
+            bit = (dest & (1 << n)) >> n;
+            frame.add(bit);
+        }
+        //// part 2: add src
+        for(int n = 0; n < Config.SRC_SIZE; n++){
+            bit = (src & (1 << n)) >> n;
+            frame.add(bit);
+        }
+        //// part 3: add type
+        for(int n = 0; n < Config.TYPE_SIZE; n++){
+            bit = (type & (1 << n)) >> n;
+            frame.add(bit);
+        }
+        //// part 4: add seq
+        for(int n = 0; n < Config.SEQ_SIZE; n++){
             bit = (idx & (1 << n)) >> n;
             frame.add(bit);
         }
-        //// part2: add frame data
+        //// part 5: add frame data
         if(frame_data != null) {
             frame.addAll(frame_data);
         }
-        //// part3: cal CRC
+        //// part 6: cal CRC
         List<Integer> crc_code = CRC16.get_crc16(frame);
         //// part4: modulate
         float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame.size()+ Config.CRC_SIZE)];

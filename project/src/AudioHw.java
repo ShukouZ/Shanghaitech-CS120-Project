@@ -62,7 +62,7 @@ public class AudioHw implements AsioDriverListener {
 			activeChannels.add(inputChannel);
 
 			// asioDriver settings
-			asioDriver.setSampleRate(Config.PHY_TX_SAMPLING_RATE);
+			asioDriver.setSampleRate(Config.PHY_SAMPLING_RATE);
 			asioDriver.createBuffers(activeChannels);  // create the audio buffers and prepare the driver to run
 			System.out.println("ASIO buffer created, size: " + asioDriver.getBufferPreferredSize());
 
