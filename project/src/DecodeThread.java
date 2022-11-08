@@ -107,35 +107,34 @@ public class DecodeThread extends Thread {
                     System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
                 }
                 else {
-
                     // get dest
                     int dest = 0;
-                    for (int n = 0; n < Config.DEST_SIZE; n++)
+                    for (int i = 0; i < Config.DEST_SIZE; i++)
                     {
-                        dest += decoded_block_data.get(n) << n;
+                        dest += decoded_block_data.get(i) << i;
                     }
 
                     if (dest != node_id) continue;
 
                     // get src
                     int src = 0;
-                    for (int n = Config.DEST_SIZE; n < Config.DEST_SIZE + Config.SRC_SIZE; n++)
+                    for (int i = 0; i < Config.SRC_SIZE; i++)
                     {
-                        src += decoded_block_data.get(n) << n;
+                        dest += decoded_block_data.get(Config.DEST_SIZE + i) << i;
                     }
 
                     // get type
                     int type = 0;
-                    for (int n = Config.DEST_SIZE + Config.SRC_SIZE; n < Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE; n++)
+                    for (int i = 0; i < Config.TYPE_SIZE; i++)
                     {
-                        type += decoded_block_data.get(n) << n;
+                        type += decoded_block_data.get(Config.DEST_SIZE + Config.SRC_SIZE + i) << i;
                     }
 
                     // get id
                     int id = 0;
-                    for (int n = Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE; n < Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE; n++)
+                    for (int i = 0; i < Config.SEQ_SIZE; i++)
                     {
-                        id += decoded_block_data.get(n) << n;
+                        id += decoded_block_data.get(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + i) << i;
                     }
 
                     if (type == Config.TYPE_ACK) {
@@ -147,7 +146,7 @@ public class DecodeThread extends Thread {
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
                         receiver.sendACK(src, node_id);
-                        receiver.storeFrame(decoded_block_data.subList(Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.SEQ_SIZE), id);
+                        receiver.storeFrame(decoded_block_data.subList(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE), id);
                     }
                     else if (type == Config.TYPE_PERF){
 
