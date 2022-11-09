@@ -44,7 +44,7 @@ public class Config {
 	public final static int TYPE_SIZE = 4;
 	public final static int SEQ_SIZE = 8;
 	public final static int PAYLOAD_SIZE = 250;
-	public final static int CRC_SIZE = 16;
+	public final static int CRC_SIZE = 32;
 	public final static int ACK_SIZE = DEST_SIZE + SRC_SIZE + TYPE_SIZE + SEQ_SIZE;
 	public final static int FRAME_SIZE = DEST_SIZE + SRC_SIZE + TYPE_SIZE + SEQ_SIZE + PAYLOAD_SIZE;
 

@@ -102,10 +102,11 @@ public class AudioHw implements AsioDriverListener {
 		int start_time = (int)System.currentTimeMillis();
 		int wait_cnt = 0;
 		while (playList != null && playLoc < playList.length || (!channelFree && waitChannelFree && wait_cnt < Config.MAC_RETRY_LIMIT)){
-			if ((int)System.currentTimeMillis() - start_time > 100){
+			if ((int)System.currentTimeMillis() - start_time > 100 && waitChannelFree){
 				start_time = (int)System.currentTimeMillis();
 				wait_cnt ++;
 				playLoc = 0;
+				System.out.println("1");
 			}
 			Thread.yield();
 		}
