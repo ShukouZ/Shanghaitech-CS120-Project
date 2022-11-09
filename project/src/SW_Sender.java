@@ -55,15 +55,15 @@ public class SW_Sender {
         int current_frame;
         while(LAR < frame_num - 1){
             current_frame = LAR + 1;
-            while ((int)System.currentTimeMillis() - window_timer < ((window_size+1)*millisPerFrame)){
+            while ((int)System.currentTimeMillis() - window_timer < (window_size*millisPerFrame+50)){
                 if (current_frame <= LAR + window_size && current_frame < frame_num){
                     if (sentList[current_frame] > Config.MAC_RETRY_LIMIT){
-                        System.out.println(current_frame + " reached retry limit.");
+                        System.out.println("\n"+current_frame + " reached retry limit.");
                         System.out.println("Stop sending.");
                         return;
                     }
                     if(current_frame>LAR) {
-                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
+//                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
                         audioHw.PHYSend(track_list.get(current_frame));
                         sentList[current_frame]++;
                         try{
@@ -79,6 +79,7 @@ public class SW_Sender {
             }
             window_timer = (int)System.currentTimeMillis();
         }
+
     }
 
     public void receiveACK(int id){
