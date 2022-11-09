@@ -14,6 +14,8 @@ public class DecodeThread extends Thread {
     private final int node_id;
     private int perf_id;
 
+    public boolean receivedPing;
+
     DecodeThread(AudioHw _audioHw, SW_Receiver _receiver, SW_Sender _sender, int _src){
         running = true;
         audioHw = _audioHw;
@@ -21,6 +23,7 @@ public class DecodeThread extends Thread {
         sender = _sender;
         node_id = _src;
         perf_id = 0;
+        receivedPing = false;
 
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_SAMPLING_RATE);
@@ -30,7 +33,7 @@ public class DecodeThread extends Thread {
     public static void sendACK(int dest, int src, int type, int id){
         float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true);
         audioHw.PHYSend(track);
-        System.out.println("Send ACK: " + id);
+//        System.out.println("Send ACK: " + id);
     }
 
 
@@ -77,7 +80,6 @@ public class DecodeThread extends Thread {
             return null;
         }
 
-        System.out.println(offset);
         return new ArrayList<>(decoded_data_foreach.subList(0, data_size - Config.CRC_SIZE));
     }
 
@@ -184,12 +186,14 @@ public class DecodeThread extends Thread {
                         sendACK(src, node_id, Config.TYPE_PING_REPLY, id);
                     }
                     else if (type == Config.TYPE_PING_REPLY){
-                        int end_time = (int)System.currentTimeMillis() % 256;
-                        end_time = end_time > id ?
-                                end_time :
-                                end_time + 256;
-                        int duration = end_time - id;
-                        System.out.println("Ping: "+duration+" ms.");
+//                        int end_time = (int)System.currentTimeMillis() % 256;
+//                        System.out.println("End: " + end_time);
+//                        end_time = end_time > id ?
+//                                end_time :
+//                                end_time + 256;
+//                        int duration = end_time - id;
+                        receivedPing = true;
+                        System.out.println("Ping: "+((int)System.currentTimeMillis() - audioHw.end_time)+" ms.");
                     }
                 }
 

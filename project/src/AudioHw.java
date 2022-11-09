@@ -34,6 +34,11 @@ public class AudioHw implements AsioDriverListener {
 
 	private int playLoc;
 
+	public int start_time;
+	public int end_time;
+
+
+
 	public void init() {
 		activeChannels = new HashSet<AsioChannel>();  // create a Set of AsioChannels
 
@@ -98,6 +103,7 @@ public class AudioHw implements AsioDriverListener {
 
 		playList = track;
 		playLoc = 0;
+		start_time = (int)System.currentTimeMillis();
 	}
 
 	// Detect preamble.
@@ -144,6 +150,9 @@ public class AudioHw implements AsioDriverListener {
 			if (playList != null && playLoc < playList.length){
 				output[i] = playList[playLoc];
 				playLoc++;
+				if (playLoc == playList.length){
+					end_time = (int)System.currentTimeMillis();
+				}
 			}
 			else {
 				output[i] = 0.0f;
