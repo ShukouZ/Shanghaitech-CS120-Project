@@ -82,7 +82,9 @@ public class SW_Sender {
                     }
                     if(current_frame>LAR) {
 //                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
-                        DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
+                        if(waitChannelFree) {
+                            DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
+                        }
                         audioHw.PHYSend(track_list.get(current_frame), waitChannelFree);
                         sentList[current_frame]++;
                         try{
@@ -165,7 +167,7 @@ public class SW_Sender {
             frame.addAll(frame_data);
         }
         //// part 6: cal CRC
-        List<Integer> crc_code = crc32.get_crc(frame);
+        List<Integer> crc_code = crc16.get_crc(frame);
         //// part 7: modulate
         float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame.size()+ Config.CRC_SIZE)];
         // modulate
