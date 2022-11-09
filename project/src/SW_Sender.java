@@ -22,8 +22,7 @@ public class SW_Sender {
     // !!NOTE: consider DICT
     private int window_timer;
 
-
-    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int dest, int src){
+    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int dest, int src, int type){
         // get 6250 bytes of data
         byte[] byte_data = Util.readFileByBytes(filePath, Config.FILE_BYTES);
         // get 6250*8 bits of data
@@ -33,7 +32,7 @@ public class SW_Sender {
         frame_num = data.size() / Config.PAYLOAD_SIZE;
         track_list = new ArrayList<>();
         for (int i = 0; i< frame_num; i++){
-            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), dest, src, Config.TYPE_DATA, i, false));
+            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), dest, src, type, i, false));
         }
 
         // init the audio driver

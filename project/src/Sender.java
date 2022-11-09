@@ -8,7 +8,8 @@ public class Sender {
                                         15, audioHw,
                                         40,
                                         Config.NODE_2_CODE,
-                                        Config.NODE_1_CODE);
+                                        Config.NODE_1_CODE,
+                                        Config.TYPE_DATA);
         DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
 
         decodeThread.start();
