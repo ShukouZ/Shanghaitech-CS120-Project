@@ -145,11 +145,12 @@ public class DecodeThread extends Thread {
 
                     if (type == Config.TYPE_ACK) {
                         // ACK
-                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
                         sender.receiveACK(id);
+                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
+
                     } else if (type == Config.TYPE_DATA){
-                        id --;
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
+                        id --;
                         // write data
                         receiver.sendACK(src, node_id);
                         receiver.storeFrame(decoded_block_data.subList(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE), id);

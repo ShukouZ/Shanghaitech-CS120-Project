@@ -53,27 +53,29 @@ public class SW_Sender {
     }
 
     public void sendWindowedFrame(){
-        int current_frame = -1;
+        int current_frame;
         while(LAR < frame_num - 1){
             current_frame = LAR + 1;
-            while ((int)System.currentTimeMillis() - window_timer < 800){
+            while ((int)System.currentTimeMillis() - window_timer < 600){
                 if (current_frame <= LAR + window_size && current_frame < frame_num){
                     if (sentList[current_frame] > Config.MAC_RETRY_LIMIT){
                         System.out.println(current_frame + " reached retry limit.");
                         System.out.println("Stop sending.");
                         return;
                     }
-                    System.out.println("Current Frame: "+(current_frame)+" with LAR: "+LAR);
-                    audioHw.PHYSend(track_list.get(current_frame));
-//                    LAR += 1;
-                    sentList[current_frame] ++;
+                    if(current_frame>LAR) {
+                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
+                        audioHw.PHYSend(track_list.get(current_frame));
+                        sentList[current_frame]++;
+                        try{
+                            Thread.sleep(millisPerFrame);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
                     current_frame ++;
 
-                    try{
-                        Thread.sleep(millisPerFrame);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
+
                 }
             }
             window_timer = (int)System.currentTimeMillis();
@@ -81,9 +83,8 @@ public class SW_Sender {
     }
 
     public void receiveACK(int id){
-        int idx = id-1;
-        if(idx > LAR && idx <= LAR+window_size) {
-            LAR = idx;
+        if(id > LAR && id <= LAR+window_size) {
+            LAR = id;
             window_timer = (int)System.currentTimeMillis();
         }
     }
