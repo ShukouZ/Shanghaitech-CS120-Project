@@ -33,7 +33,7 @@ public class SW_Sender {
         frame_num = data.size() / Config.PAYLOAD_SIZE;
         track_list = new ArrayList<>();
         for (int i = 0; i< frame_num; i++){
-            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), dest, src, Config.TYPE_DATA, i+1, false));
+            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), dest, src, Config.TYPE_DATA, i, false));
         }
 
         // init the audio driver
@@ -56,7 +56,7 @@ public class SW_Sender {
         int current_frame;
         while(LAR < frame_num - 1){
             current_frame = LAR + 1;
-            while ((int)System.currentTimeMillis() - window_timer < 600){
+            while ((int)System.currentTimeMillis() - window_timer < ((window_size+1)*millisPerFrame)){
                 if (current_frame <= LAR + window_size && current_frame < frame_num){
                     if (sentList[current_frame] > Config.MAC_RETRY_LIMIT){
                         System.out.println(current_frame + " reached retry limit.");
@@ -83,6 +83,7 @@ public class SW_Sender {
     }
 
     public void receiveACK(int id){
+        id--;
         if(id > LAR && id <= LAR+window_size) {
             LAR = id;
             window_timer = (int)System.currentTimeMillis();
