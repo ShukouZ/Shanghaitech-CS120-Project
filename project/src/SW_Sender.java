@@ -54,7 +54,7 @@ public class SW_Sender {
 
     public void sendWindowedFrame(){
         int current_frame = -1;
-        while(current_frame < frame_num - 2){
+        while(LAR < frame_num - 1){
             current_frame = LAR + 1;
             while ((int)System.currentTimeMillis() - window_timer < 800){
                 if (current_frame <= LAR + window_size && current_frame < frame_num){
@@ -65,6 +65,7 @@ public class SW_Sender {
                     }
                     System.out.println("Current Frame: "+(current_frame)+" with LAR: "+LAR);
                     audioHw.PHYSend(track_list.get(current_frame));
+//                    LAR += 1;
                     sentList[current_frame] ++;
                     current_frame ++;
 
@@ -80,8 +81,9 @@ public class SW_Sender {
     }
 
     public void receiveACK(int id){
-        if(id > LAR && id <= LAR+window_size) {
-            LAR = id;
+        int idx = id-1;
+        if(idx > LAR && idx <= LAR+window_size) {
+            LAR = idx;
             window_timer = (int)System.currentTimeMillis();
         }
     }
@@ -107,7 +109,7 @@ public class SW_Sender {
         float[] track = new float[track_size+zero_buffer_len];
         System.arraycopy(Config.preamble, 0, track, 0, Config.preamble.length);
         // add length flag for frame data
-        for(int j=0; j<4; j++)
+        for(int j=0; j<Config.LEN_SIZE; j++)
             track[Config.preamble.length+j] = len_data;
 
         // add frame data
@@ -140,7 +142,7 @@ public class SW_Sender {
         }
         //// part 6: cal CRC
         List<Integer> crc_code = CRC16.get_crc16(frame);
-        //// part4: modulate
+        //// part 7: modulate
         float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame.size()+ Config.CRC_SIZE)];
         // modulate
         for(int j=0; j<frame.size(); ++j){
