@@ -102,7 +102,7 @@ public class SW_Sender {
         int track_size;
         float len_data;
         if(isASK){
-            zero_buffer_len = Config.HW_BUFFER_SIZE;
+            zero_buffer_len = Config.HW_BUFFER_SIZE - (Config.LEN_SIZE + Config.ACK_SAMPLE_SIZE) + 1;
             track_size = Config.preamble.length + Config.LEN_SIZE + Config.ACK_SAMPLE_SIZE;
             len_data = -1.0f;
         }else{

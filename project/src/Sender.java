@@ -62,14 +62,21 @@ public class Sender {
         DecodeThread decodeThread = new DecodeThread(audioHw, null, null, Config.NODE_1_CODE);
         decodeThread.start();
         DecodeThread.sendACK(Config.NODE_2_CODE, Config.NODE_1_CODE, Config.TYPE_PING_REQ, (int)System.currentTimeMillis() % 256);
+
+        try {
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         decodeThread.stopDecoding();
         audioHw.stop();
     }
 
     public static void main(final String[] args) {
 //        main_part2();
-//        main_perf();
-        main_ping();
+        main_perf();
+//        main_ping();
     }
 }
 
