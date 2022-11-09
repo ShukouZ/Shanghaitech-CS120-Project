@@ -24,6 +24,8 @@ public class SW_Sender {
 
     private int window_duration;
 
+    private boolean isPerf;
+
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int dest, int src, int type){
         // get 6250 bytes of data
         byte[] byte_data = Util.readFileByBytes(filePath, Config.FILE_BYTES);
@@ -52,6 +54,9 @@ public class SW_Sender {
 
         // set time for each frame
         millisPerFrame = _millsPerFrame;
+
+        // Perf test
+        isPerf = (type == Config.TYPE_PERF);
     }
 
     public void sendWindowedFrame(){
@@ -73,6 +78,9 @@ public class SW_Sender {
                             Thread.sleep(millisPerFrame);
                         }catch (Exception e){
                             e.printStackTrace();
+                        }
+                        if(isPerf){
+                            LAR ++;
                         }
                     }
                     current_frame ++;

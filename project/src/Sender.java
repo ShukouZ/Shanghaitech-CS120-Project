@@ -78,8 +78,8 @@ public class Sender {
 
     public static void main(final String[] args) {
 //        main_part2();
-//        main_perf();
-        main_ping();
+        main_perf();
+//        main_ping();
     }
 }
 

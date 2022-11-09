@@ -177,11 +177,11 @@ public class DecodeThread extends Thread {
                         sendACK(src, node_id, Config.TYPE_ACK, receiver.getReceivedSize());
                     }
                     else if (type == Config.TYPE_PERF){
-                        System.out.println("Data block " + frame_decoded_num + " received perf: " + id);
-                        if (id == perf_id){
-                            perf_id++;
-                        }
-                        sendACK(src, node_id, Config.TYPE_ACK, perf_id);
+//                        System.out.println("Data block " + frame_decoded_num + " received perf: " + id);
+//                        if (id == perf_id){
+//                            perf_id++;
+//                        }
+//                        sendACK(src, node_id, Config.TYPE_ACK, perf_id);
                     }else if (type == Config.TYPE_PING_REQ){
                         sendACK(src, node_id, Config.TYPE_PING_REPLY, id);
                     }
