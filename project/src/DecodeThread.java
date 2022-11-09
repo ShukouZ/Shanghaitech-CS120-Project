@@ -32,7 +32,7 @@ public class DecodeThread extends Thread {
 
     public static void sendACK(int dest, int src, int type, int id){
         float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true);
-        audioHw.PHYSend(track);
+        audioHw.PHYSend(track, false);
 //        System.out.println("Send ACK: " + id);
     }
 

@@ -72,7 +72,7 @@ public class SW_Sender {
                     }
                     if(current_frame>LAR) {
 //                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
-                        audioHw.PHYSend(track_list.get(current_frame));
+                        audioHw.PHYSend(track_list.get(current_frame), true);
                         sentList[current_frame]++;
                         try{
                             Thread.sleep(millisPerFrame);

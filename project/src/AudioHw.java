@@ -98,8 +98,8 @@ public class AudioHw implements AsioDriverListener {
 		asioDriver.shutdownAndUnloadDriver();  // tear everything down
 	}
 
-	public void PHYSend(float[] track){
-		while (playList != null && playLoc < playList.length || !channelFree){
+	public void PHYSend(float[] track, boolean isData){
+		while (playList != null && playLoc < playList.length || (!channelFree && isData)){
 			Thread.yield();
 		}
 
@@ -169,6 +169,7 @@ public class AudioHw implements AsioDriverListener {
 				for (float sample: input){
 					sum += Math.abs(sample);
 				}
+//				System.out.println(sum);
 				channelFree = sum < 1.0f;
 
 
