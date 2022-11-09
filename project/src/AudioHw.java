@@ -37,7 +37,7 @@ public class AudioHw implements AsioDriverListener {
 	public int start_time;
 	public int end_time;
 
-
+	private boolean channelFree;
 
 	public void init() {
 		activeChannels = new HashSet<AsioChannel>();  // create a Set of AsioChannels
@@ -81,6 +81,8 @@ public class AudioHw implements AsioDriverListener {
 			length = 0;
 
 			playLoc = 0;
+
+			channelFree = false;
 		}
 	}
 
@@ -97,7 +99,7 @@ public class AudioHw implements AsioDriverListener {
 	}
 
 	public void PHYSend(float[] track){
-		while (playList != null && playLoc < playList.length){
+		while (playList != null && playLoc < playList.length || !channelFree){
 			Thread.yield();
 		}
 
@@ -162,6 +164,14 @@ public class AudioHw implements AsioDriverListener {
 		for (AsioChannel channelInfo : channels) {
 			if (channelInfo.isInput()){
 				channelInfo.read(input);
+
+				float sum = 0;
+				for (float sample: input){
+					sum += Math.abs(sample);
+				}
+				channelFree = sum < 1.0f;
+
+
 				if(frameDetected) {
 					for(int id = 0; id < Config.HW_BUFFER_SIZE; id++){
 						float input_data = input[id];
