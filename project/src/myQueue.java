@@ -39,4 +39,8 @@ public class myQueue {
         return sum;
     }
 
+    public float get(int id){
+        return queue[(id+head) % size];
+    }
+
 }
