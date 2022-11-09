@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class CRC16 {
+public class crc16 {
     static byte[] auchCRCHi = {
             (byte)0x00,(byte)0xC1,(byte)0x81,(byte)0x40,(byte)0x01,(byte)0xC0,(byte)0x80,(byte)0x41,(byte)0x01,(byte)0xC0,(byte)0x80,(byte)0x41,(byte)0x00,(byte)0xC1,(byte)0x81,(byte)0x40,(byte)0x01,(byte)0xC0,(byte)0x80,(byte)0x41,
             (byte)0x00,(byte)0xC1,(byte)0x81,(byte)0x40,(byte)0x00,(byte)0xC1,(byte)0x81,(byte)0x40,(byte)0x01,(byte)0xC0,(byte)0x80,(byte)0x41,(byte)0x01,(byte)0xC0,(byte)0x80,(byte)0x41,(byte)0x00,(byte)0xC1,(byte)0x81,(byte)0x40,
@@ -34,7 +34,7 @@ public class CRC16 {
     };
 
 
-    public static List<Integer> get_crc16(List<Integer> frame) {
+    public static List<Integer> get_crc(List<Integer> frame) {
         byte[] data = Util.frameToBytes(frame);
         int len = data.length;
         int uchCRCHi = 0xff;
@@ -85,7 +85,7 @@ public class CRC16 {
         a.add(1);
 
 //        byte[] buffer = new byte[] {0x02, 0x05};
-        List<Integer> crc16 = get_crc16(a);
+        List<Integer> crc16 = get_crc(a);
         System.out.println(crc16);
     }
 }

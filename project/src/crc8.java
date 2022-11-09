@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class CRC8 {
+public class crc8 {
     static final char[] CRC_TABLE = {
             0x00, 0x91, 0xE3, 0x72, 0x07, 0x96, 0xE4, 0x75,
             0x0E, 0x9F, 0xED, 0x7C, 0x09, 0x98, 0xEA, 0x7B,
@@ -38,7 +38,7 @@ public class CRC8 {
 
     public static int CRC_SIZE = 8;
 
-    public static List<Integer> get_crc8(List<Integer> data){
+    public static List<Integer> get_crc(List<Integer> data){
         char fcs = 0xff;
         for (Integer datum : data) {
             fcs = CRC_TABLE[fcs ^ (char) (int) datum];
@@ -61,6 +61,6 @@ public class CRC8 {
         a.add(1);
         a.add(0);
         a.add(1);
-        System.out.println(get_crc8(a));
+        System.out.println(get_crc(a));
     }
 }

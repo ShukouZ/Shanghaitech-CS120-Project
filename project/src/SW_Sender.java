@@ -29,7 +29,9 @@ public class SW_Sender {
 
     private final boolean isPerf;
 
-    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type){
+    private final boolean waitChannelFree;
+
+    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type, boolean _waitChannelFree){
         // get 6250 bytes of data
         byte[] byte_data = Util.readFileByBytes(filePath, Config.FILE_BYTES);
         // get 6250*8 bits of data
@@ -63,13 +65,15 @@ public class SW_Sender {
 
         // Perf test
         isPerf = (type == Config.TYPE_PERF);
+
+        waitChannelFree = _waitChannelFree;
     }
 
     public void sendWindowedFrame(){
         int current_frame;
         while(LAR < frame_num - 1){
             current_frame = LAR + 1;
-            while ((int)System.currentTimeMillis() - window_timer < window_duration || current_frame <= LAR + window_size){
+            while ((int)System.currentTimeMillis() - window_timer < window_duration || (current_frame <= LAR + window_size && current_frame < frame_num)){
                 if (current_frame <= LAR + window_size && current_frame < frame_num){
                     if (sentList[current_frame] > Config.MAC_RETRY_LIMIT){
                         System.out.println("\n"+current_frame + " reached retry limit.");
@@ -79,7 +83,7 @@ public class SW_Sender {
                     if(current_frame>LAR) {
 //                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
                         DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
-                        audioHw.PHYSend(track_list.get(current_frame), true);
+                        audioHw.PHYSend(track_list.get(current_frame), waitChannelFree);
                         sentList[current_frame]++;
                         try{
                             Thread.sleep(millisPerFrame);
@@ -161,7 +165,7 @@ public class SW_Sender {
             frame.addAll(frame_data);
         }
         //// part 6: cal CRC
-        List<Integer> crc_code = CRC16.get_crc16(frame);
+        List<Integer> crc_code = crc32.get_crc(frame);
         //// part 7: modulate
         float[] frame_wave = new float[Config.SAMPLE_PER_BIT *(frame.size()+ Config.CRC_SIZE)];
         // modulate

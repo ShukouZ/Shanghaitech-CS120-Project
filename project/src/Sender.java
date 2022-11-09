@@ -11,7 +11,35 @@ public class Sender {
                 500,
                 Config.NODE_2_CODE,
                 Config.NODE_1_CODE,
-                Config.TYPE_DATA);
+                Config.TYPE_DATA,
+                false);
+        DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
+
+        decodeThread.start();
+
+        long t1 = System.currentTimeMillis();
+        sender.sendWindowedFrame();
+        long t2 = System.currentTimeMillis();
+        System.out.println("\nDone, time passed: "+(t2-t1)+"ms.");
+
+        decodeThread.stopDecoding();
+        audioHw.stop();
+    }
+
+    public static void main_part3(){
+        AudioHw audioHw = new AudioHw();
+        audioHw.init();
+        audioHw.start();
+
+        SW_Sender sender = new SW_Sender("src/INPUT.bin",
+                2,
+                audioHw,
+                85,
+                200,
+                Config.NODE_2_CODE,
+                Config.NODE_1_CODE,
+                Config.TYPE_DATA,
+                true);
         DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
 
         decodeThread.start();
@@ -33,11 +61,12 @@ public class Sender {
         SW_Sender sender = new SW_Sender("src/INPUT.bin",
                 15,
                 audioHw,
-                85,
+                40,
                 1400,
                 Config.NODE_2_CODE,
                 Config.NODE_1_CODE,
-                Config.TYPE_PERF);
+                Config.TYPE_PERF,
+                false);
         DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
 
         decodeThread.start();
@@ -77,8 +106,9 @@ public class Sender {
     }
 
     public static void main(final String[] args) {
-//        main_part2();
-        main_perf();
+        main_part2();
+//        main_part3();
+//        main_perf();
 //        main_ping();
     }
 }
