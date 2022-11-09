@@ -54,9 +54,22 @@ public class Sender {
         audioHw.stop();
     }
 
+    public static void main_ping(){
+        AudioHw audioHw = new AudioHw();
+        audioHw.init();
+        audioHw.start();
+
+        DecodeThread decodeThread = new DecodeThread(audioHw, null, null, Config.NODE_1_CODE);
+        decodeThread.start();
+        DecodeThread.sendACK(Config.NODE_2_CODE, Config.NODE_1_CODE, Config.TYPE_PING_REQ, (int)System.currentTimeMillis() % 256);
+        decodeThread.stopDecoding();
+        audioHw.stop();
+    }
+
     public static void main(final String[] args) {
 //        main_part2();
-        main_perf();
+//        main_perf();
+        main_ping();
     }
 }
 

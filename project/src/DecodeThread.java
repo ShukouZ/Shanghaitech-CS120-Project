@@ -3,7 +3,7 @@ import java.util.List;
 
 public class DecodeThread extends Thread {
     private boolean running;
-    private final AudioHw audioHw;
+    private static AudioHw audioHw;
 
     private final ArrayList<Float> carrier;
     private final float[] data_signal_remove_carrier = new float[Config.FRAME_SAMPLE_SIZE];
@@ -27,8 +27,8 @@ public class DecodeThread extends Thread {
         carrier = wave.sample(Config.PHY_SAMPLING_RATE);
     }
 
-    public void sendACK(int dest, int src, int id){
-        float[] track = SW_Sender.frameToTrack(null, dest, src, Config.TYPE_ACK, id, true);
+    public static void sendACK(int dest, int src, int type, int id){
+        float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true);
         audioHw.PHYSend(track);
 //        System.out.println("Send ACK: " + id);
     }
@@ -161,18 +161,23 @@ public class DecodeThread extends Thread {
 //                        System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
                         receiver.storeFrame(decoded_block_data.subList(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE), id);
-                        sendACK(src, node_id, receiver.getReceivedSize());
+                        sendACK(src, node_id, Config.TYPE_ACK, receiver.getReceivedSize());
                     }
                     else if (type == Config.TYPE_PERF){
                         if (id == perf_id){
                             perf_id++;
-                            sendACK(src, node_id, perf_id);
+                            sendACK(src, node_id, Config.TYPE_ACK, perf_id);
                         }
                     }else if (type == Config.TYPE_PING_REQ){
-
+                        sendACK(src, node_id, Config.TYPE_PING_REPLY, id);
                     }
                     else if (type == Config.TYPE_PING_REPLY){
-
+                        int end_time = (int)System.currentTimeMillis() % 256;
+                        end_time = end_time > id ?
+                                end_time :
+                                end_time + 256;
+                        int duration = end_time - id;
+                        System.out.println("Ping: "+duration+" ms.");
                     }
                 }
 
