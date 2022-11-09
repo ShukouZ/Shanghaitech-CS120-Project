@@ -1,12 +1,14 @@
 public class Sender {
-    public static  void part2(){
+    public static void main_part2(){
         AudioHw audioHw = new AudioHw();
         audioHw.init();
         audioHw.start();
 
         SW_Sender sender = new SW_Sender("src/INPUT.bin",
-                15, audioHw,
+                15,
+                audioHw,
                 40,
+                500,
                 Config.NODE_2_CODE,
                 Config.NODE_1_CODE,
                 Config.TYPE_DATA);
@@ -23,17 +25,19 @@ public class Sender {
         audioHw.stop();
     }
 
-    public static void perf(){
+    public static void main_perf(){
         AudioHw audioHw = new AudioHw();
         audioHw.init();
         audioHw.start();
 
         SW_Sender sender = new SW_Sender("src/INPUT.bin",
-                15, audioHw,
+                15,
+                audioHw,
                 85,
+                1400,
                 Config.NODE_2_CODE,
                 Config.NODE_1_CODE,
-                Config.TYPE_DATA);
+                Config.TYPE_PERF);
         DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
 
         decodeThread.start();
@@ -51,8 +55,8 @@ public class Sender {
     }
 
     public static void main(final String[] args) {
-//        part2();
-        perf();
+//        main_part2();
+        main_perf();
     }
 }
 

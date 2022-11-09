@@ -22,7 +22,9 @@ public class SW_Sender {
     // !!NOTE: consider DICT
     private int window_timer;
 
-    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int dest, int src, int type){
+    private int window_duration;
+
+    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int dest, int src, int type){
         // get 6250 bytes of data
         byte[] byte_data = Util.readFileByBytes(filePath, Config.FILE_BYTES);
         // get 6250*8 bits of data
@@ -40,6 +42,7 @@ public class SW_Sender {
 
         // init window
         window_size = _window_size;
+        window_duration = _window_duration;
         LAR = -1;
         window_timer = 0;
 
@@ -55,7 +58,7 @@ public class SW_Sender {
         int current_frame;
         while(LAR < frame_num - 1){
             current_frame = LAR + 1;
-            while ((int)System.currentTimeMillis() - window_timer < (window_size*millisPerFrame+50)){
+            while ((int)System.currentTimeMillis() - window_timer < window_duration){
                 if (current_frame <= LAR + window_size && current_frame < frame_num){
                     if (sentList[current_frame] > Config.MAC_RETRY_LIMIT){
                         System.out.println("\n"+current_frame + " reached retry limit.");
