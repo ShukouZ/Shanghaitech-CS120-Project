@@ -67,6 +67,7 @@ public class DecodeThread extends Thread {
             return null;
         }
 
+//        System.out.println(offset);
         return new ArrayList<>(decoded_data_foreach.subList(0, data_size - Config.CRC_SIZE));
     }
 
@@ -92,13 +93,11 @@ public class DecodeThread extends Thread {
             if(data_signal != null){
                 frame_decoded_num++;
 
+                decoded_block_data = null;
                 // find best start id by crc
-                decoded_block_data = decodeFrame(data_signal, Config.MAX_OFFSET / 2);
-                if (decoded_block_data == null) {
-                    for (int offset = 0; offset < Config.MAX_OFFSET; offset++) {
-                        decoded_block_data = decodeFrame(data_signal, offset);
-                        if (decoded_block_data != null) break;
-                    }
+                for (int offset = 0; offset < Config.MAX_OFFSET; offset++) {
+                    decoded_block_data = decodeFrame(data_signal, offset);
+                    if (decoded_block_data != null) break;
                 }
 
 
@@ -150,10 +149,9 @@ public class DecodeThread extends Thread {
 
                     } else if (type == Config.TYPE_DATA){
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
-                        id --;
                         // write data
-                        receiver.sendACK(src, node_id);
                         receiver.storeFrame(decoded_block_data.subList(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE), id);
+                        receiver.sendACK(src, node_id);
                     }
                     else if (type == Config.TYPE_PERF){
 

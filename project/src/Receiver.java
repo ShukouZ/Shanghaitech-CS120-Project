@@ -13,7 +13,7 @@ public class Receiver {
         DecodeThread decodeThread  = new DecodeThread(audioHw, receiver, null, Config.NODE_2_CODE);
         decodeThread.start();
         try {
-            Thread.sleep(25000);  // ms
+            Thread.sleep(15000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
