@@ -12,7 +12,7 @@ public class DecodeThread extends Thread {
     private final SW_Receiver receiver;
     private final SW_Sender sender;
     private final int node_id;
-
+    private int perf_id;
 
     DecodeThread(AudioHw _audioHw, SW_Receiver _receiver, SW_Sender _sender, int _src){
         running = true;
@@ -20,11 +20,21 @@ public class DecodeThread extends Thread {
         receiver = _receiver;
         sender = _sender;
         node_id = _src;
+        perf_id = 0;
 
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_SAMPLING_RATE);
         carrier = wave.sample(Config.PHY_SAMPLING_RATE);
     }
+
+    public void sendACK(int dest, int src, int id){
+        float[] track = SW_Sender.frameToTrack(null, dest, src, Config.TYPE_ACK, id, true);
+        audioHw.PHYSend(track);
+//        System.out.println("Send ACK: " + id);
+    }
+
+
+
 
     private ArrayList<Integer> decodeFrame(ArrayList<Float> data_signal, int offset){
         float sum;
@@ -103,7 +113,7 @@ public class DecodeThread extends Thread {
 
                 if (decoded_block_data == null) {
                     // not found
-                    System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
+//                    System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
                 }
                 else {
                     // get dest
@@ -151,10 +161,13 @@ public class DecodeThread extends Thread {
 //                        System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
                         receiver.storeFrame(decoded_block_data.subList(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE), id);
-                        receiver.sendACK(src, node_id);
+                        sendACK(src, node_id, receiver.getReceivedSize());
                     }
                     else if (type == Config.TYPE_PERF){
-
+                        if (id == perf_id){
+                            perf_id++;
+                            sendACK(src, node_id, perf_id);
+                        }
                     }else if (type == Config.TYPE_PING_REQ){
 
                     }

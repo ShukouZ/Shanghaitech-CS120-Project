@@ -24,11 +24,8 @@ public class SW_Receiver {
         }
     }
 
-    public void sendACK(int dest, int src){
-        int id = frame_list.size();
-        float[] track = SW_Sender.frameToTrack(null, dest, src, Config.TYPE_ACK, id, true);
-        audioHw.PHYSend(track);
-        System.out.println("Send ACK: " + id);
+    public int getReceivedSize(){
+        return  frame_list.size();
     }
 
     public void writeFile(){
