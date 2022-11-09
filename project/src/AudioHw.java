@@ -37,7 +37,7 @@ public class AudioHw implements AsioDriverListener {
 	public int start_time;
 	public int end_time;
 
-	private boolean channelFree;
+	public boolean channelFree;
 
 	public void init() {
 		activeChannels = new HashSet<AsioChannel>();  // create a Set of AsioChannels
@@ -98,14 +98,15 @@ public class AudioHw implements AsioDriverListener {
 		asioDriver.shutdownAndUnloadDriver();  // tear everything down
 	}
 
-	public void PHYSend(float[] track, boolean isData){
-		while (playList != null && playLoc < playList.length || (!channelFree && isData)){
+	public void PHYSend(float[] track, boolean waitChannelFree){
+		while (playList != null && playLoc < playList.length || (!channelFree && waitChannelFree)){
 			Thread.yield();
 		}
 
 		playList = track;
 		playLoc = 0;
 		start_time = (int)System.currentTimeMillis();
+		channelFree = false;
 	}
 
 	// Detect preamble.
@@ -164,14 +165,6 @@ public class AudioHw implements AsioDriverListener {
 		for (AsioChannel channelInfo : channels) {
 			if (channelInfo.isInput()){
 				channelInfo.read(input);
-
-				float sum = 0;
-				for (float sample: input){
-					sum += Math.abs(sample);
-				}
-//				System.out.println(sum);
-				channelFree = sum < 1.0f;
-
 
 				if(frameDetected) {
 					for(int id = 0; id < Config.HW_BUFFER_SIZE; id++){

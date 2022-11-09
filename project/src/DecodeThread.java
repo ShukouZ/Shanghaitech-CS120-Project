@@ -195,6 +195,12 @@ public class DecodeThread extends Thread {
                         receivedPing = true;
                         System.out.println("Ping: "+((int)System.currentTimeMillis() - audioHw.end_time)+" ms.");
                     }
+                    else if (type == Config.TYPE_SEND_REQ){
+                        sendACK(src, node_id, Config.TYPE_SEND_REPLY, id);
+                    }
+                    else if (type == Config.TYPE_SEND_REPLY){
+                        audioHw.channelFree = true;
+                    }
                 }
 
             }

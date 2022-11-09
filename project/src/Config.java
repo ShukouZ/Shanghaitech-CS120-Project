@@ -10,7 +10,7 @@ public class Config {
 	// Carrier Frequency
 	public final static int PHY_CARRIER_FREQ = 6000;
 	
-	public final static int MAC_RETRY_LIMIT = 10;
+	public final static int MAC_RETRY_LIMIT = 50;
 
 	public final static int SAMPLE_PER_BIT = 4;
 
@@ -22,6 +22,8 @@ public class Config {
 	public final static int TYPE_PERF = 2;
 	public final static int TYPE_PING_REQ = 3;
 	public final static int TYPE_PING_REPLY = 4;
+	public final static int TYPE_SEND_REQ = 5;
+	public final static int TYPE_SEND_REPLY = 6;
 
 	// device node code
 	public final static int NODE_1_CODE = 1;

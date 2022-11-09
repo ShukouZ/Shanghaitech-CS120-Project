@@ -22,11 +22,14 @@ public class SW_Sender {
     // !!NOTE: consider DICT
     private int window_timer;
 
-    private int window_duration;
+    private final int window_duration;
 
-    private boolean isPerf;
+    private int dest;
+    private int src;
 
-    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int dest, int src, int type){
+    private final boolean isPerf;
+
+    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type){
         // get 6250 bytes of data
         byte[] byte_data = Util.readFileByBytes(filePath, Config.FILE_BYTES);
         // get 6250*8 bits of data
@@ -36,7 +39,7 @@ public class SW_Sender {
         frame_num = data.size() / Config.PAYLOAD_SIZE;
         track_list = new ArrayList<>();
         for (int i = 0; i< frame_num; i++){
-            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), dest, src, type, i, false));
+            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), _dest, _src, type, i, false));
         }
 
         // init the audio driver
@@ -55,6 +58,9 @@ public class SW_Sender {
         // set time for each frame
         millisPerFrame = _millsPerFrame;
 
+        dest = _dest;
+        src = _src;
+
         // Perf test
         isPerf = (type == Config.TYPE_PERF);
     }
@@ -63,7 +69,7 @@ public class SW_Sender {
         int current_frame;
         while(LAR < frame_num - 1){
             current_frame = LAR + 1;
-            while ((int)System.currentTimeMillis() - window_timer < window_duration){
+            while ((int)System.currentTimeMillis() - window_timer < window_duration || current_frame <= LAR + window_size){
                 if (current_frame <= LAR + window_size && current_frame < frame_num){
                     if (sentList[current_frame] > Config.MAC_RETRY_LIMIT){
                         System.out.println("\n"+current_frame + " reached retry limit.");
@@ -72,6 +78,7 @@ public class SW_Sender {
                     }
                     if(current_frame>LAR) {
 //                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
+                        DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
                         audioHw.PHYSend(track_list.get(current_frame), true);
                         sentList[current_frame]++;
                         try{
