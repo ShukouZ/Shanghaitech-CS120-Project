@@ -30,7 +30,7 @@ public class DecodeThread extends Thread {
     public static void sendACK(int dest, int src, int type, int id){
         float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true);
         audioHw.PHYSend(track);
-//        System.out.println("Send ACK: " + id);
+        System.out.println("Send ACK: " + id);
     }
 
 
@@ -77,7 +77,7 @@ public class DecodeThread extends Thread {
             return null;
         }
 
-//        System.out.println(offset);
+        System.out.println(offset);
         return new ArrayList<>(decoded_data_foreach.subList(0, data_size - Config.CRC_SIZE));
     }
 
@@ -103,11 +103,22 @@ public class DecodeThread extends Thread {
             if(data_signal != null){
                 frame_decoded_num++;
 
-                decoded_block_data = null;
-                // find best start id by crc
-                for (int offset = 0; offset < Config.MAX_OFFSET; offset++) {
-                    decoded_block_data = decodeFrame(data_signal, offset);
-                    if (decoded_block_data != null) break;
+                decoded_block_data = decodeFrame(data_signal, 3);
+
+                if (decoded_block_data == null) {
+                    // find best start id by crc
+                    for (int offset = 4; offset < Config.MAX_OFFSET; offset++) {
+                        decoded_block_data = decodeFrame(data_signal, offset);
+                        if (decoded_block_data != null) break;
+                    }
+                }
+
+                if (decoded_block_data == null) {
+                    // find best start id by crc
+                    for (int offset = 0; offset < 2; offset++) {
+                        decoded_block_data = decodeFrame(data_signal, offset);
+                        if (decoded_block_data != null) break;
+                    }
                 }
 
 
@@ -155,19 +166,20 @@ public class DecodeThread extends Thread {
                     if (type == Config.TYPE_ACK) {
                         // ACK
                         sender.receiveACK(id);
-//                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
+                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
 
                     } else if (type == Config.TYPE_DATA){
-//                        System.out.println("Data block " + frame_decoded_num + " received data: " + id);
+                        System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
                         receiver.storeFrame(decoded_block_data.subList(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE), id);
                         sendACK(src, node_id, Config.TYPE_ACK, receiver.getReceivedSize());
                     }
                     else if (type == Config.TYPE_PERF){
+                        System.out.println("Data block " + frame_decoded_num + " received perf: " + id);
                         if (id == perf_id){
                             perf_id++;
-                            sendACK(src, node_id, Config.TYPE_ACK, perf_id);
                         }
+                        sendACK(src, node_id, Config.TYPE_ACK, perf_id);
                     }else if (type == Config.TYPE_PING_REQ){
                         sendACK(src, node_id, Config.TYPE_PING_REPLY, id);
                     }
