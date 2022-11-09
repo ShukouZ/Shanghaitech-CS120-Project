@@ -14,7 +14,7 @@ public class Config {
 
 	public final static int SAMPLE_PER_BIT = 4;
 
-	public final static int MAX_OFFSET = 20;
+	public final static int MAX_OFFSET = 16;
 
 	// type value
 	public final static int TYPE_DATA = 0;

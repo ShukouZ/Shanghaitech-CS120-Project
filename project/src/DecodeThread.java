@@ -29,7 +29,7 @@ public class DecodeThread extends Thread {
     private ArrayList<Integer> decodeFrame(ArrayList<Float> data_signal, int offset){
         float sum;
         int data_size;
-        if (data_signal.size() == Config.FRAME_SAMPLE_SIZE + 8){
+        if (data_signal.size() == Config.FRAME_SAMPLE_SIZE + Config.MAX_OFFSET){
             data_size = Config.FRAME_SIZE + Config.CRC_SIZE;
 //            System.out.println("Frame");
         }
@@ -93,7 +93,7 @@ public class DecodeThread extends Thread {
                 frame_decoded_num++;
 
                 // find best start id by crc
-                decoded_block_data = decodeFrame(data_signal, 4);
+                decoded_block_data = decodeFrame(data_signal, Config.MAX_OFFSET / 2);
                 if (decoded_block_data == null) {
                     for (int offset = 0; offset < Config.MAX_OFFSET; offset++) {
                         decoded_block_data = decodeFrame(data_signal, offset);

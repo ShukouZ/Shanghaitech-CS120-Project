@@ -113,7 +113,7 @@ public class AudioHw implements AsioDriverListener {
 
 			syncPower_debug = syncFIFO.dot_product(Config.preamble);
 
-			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 28.0f)) {
+			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 16.0f)) {
 				syncPower_localMax = syncPower_debug;
 				start_index = i;
 				break;
@@ -158,8 +158,8 @@ public class AudioHw implements AsioDriverListener {
 						float input_data = input[id];
 						if(frame_stored_size < max_record_num){
 
-							if (frame_stored_size >= 4 && length == 0){
-								for (int len_id = 0; len_id < 4; len_id++){
+							if (frame_stored_size >= Config.LEN_SIZE && length == 0){
+								for (int len_id = 0; len_id < Config.LEN_SIZE; len_id++){
 									length += frame_table.get(frame_table.size()-1).get(len_id);
 								}
 								if (length > 0){
