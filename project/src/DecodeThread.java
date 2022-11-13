@@ -33,7 +33,17 @@ public class DecodeThread extends Thread {
     public static void sendACK(int dest, int src, int type, int id){
         float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true);
         audioHw.PHYSend(track, false);
-//        System.out.println("Send ACK: " + id);
+        if (type == Config.TYPE_ACK){
+            System.out.println("Send ACK: " + id);
+        } else if (type == Config.TYPE_SEND_REQ) {
+//            System.out.println("Send require...");
+        }else if (type == Config.TYPE_SEND_REPLY) {
+//            System.out.println("Reply send require...");
+        }else if (type == Config.TYPE_PING_REQ) {
+//            System.out.println("Ping require...");
+        }else if (type == Config.TYPE_PING_REPLY) {
+//            System.out.println("Reply ping require...");
+        }
     }
 
 
@@ -80,6 +90,7 @@ public class DecodeThread extends Thread {
             return null;
         }
 
+//        System.out.println(offset);
         return new ArrayList<>(decoded_data_foreach.subList(0, data_size - Config.CRC_SIZE));
     }
 
@@ -126,7 +137,7 @@ public class DecodeThread extends Thread {
 
                 if (decoded_block_data == null) {
                     // not found
-//                    System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
+                    System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
                 }
                 else {
                     // get dest
@@ -168,20 +179,22 @@ public class DecodeThread extends Thread {
                     if (type == Config.TYPE_ACK) {
                         // ACK
                         sender.receiveACK(id);
-                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
+//                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
 
                     } else if (type == Config.TYPE_DATA){
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
                         receiver.storeFrame(decoded_block_data.subList(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE), id);
                         sendACK(src, node_id, Config.TYPE_ACK, receiver.getReceivedSize());
+                        audioHw.state = Config.STATE_FRAME_DETECTION;
                     }
                     else if (type == Config.TYPE_PERF){
 //                        System.out.println("Data block " + frame_decoded_num + " received perf: " + id);
-//                        if (id == perf_id){
-//                            perf_id++;
-//                        }
-//                        sendACK(src, node_id, Config.TYPE_ACK, perf_id);
+                        if (id == perf_id){
+                            perf_id++;
+                        }
+                        sendACK(src, node_id, Config.TYPE_ACK, perf_id);
+                        audioHw.state = Config.STATE_FRAME_DETECTION;
                     }else if (type == Config.TYPE_PING_REQ){
                         sendACK(src, node_id, Config.TYPE_PING_REPLY, id);
                     }
@@ -197,9 +210,11 @@ public class DecodeThread extends Thread {
                     }
                     else if (type == Config.TYPE_SEND_REQ){
                         sendACK(src, node_id, Config.TYPE_SEND_REPLY, id);
+                        audioHw.state = Config.STATE_FRAME_RX;
                     }
                     else if (type == Config.TYPE_SEND_REPLY){
-                        audioHw.channelFree = true;
+                        System.out.println("Reply received. Sending...");
+                        audioHw.state = Config.STATE_FRAME_TX;
                     }
                 }
 

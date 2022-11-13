@@ -34,18 +34,18 @@ public class Sender {
         SW_Sender sender = new SW_Sender("src/INPUT.bin",
                 2,
                 audioHw,
-                85,
-                200,
+                0,
+                300,
                 Config.NODE_2_CODE,
                 Config.NODE_1_CODE,
                 Config.TYPE_DATA,
-                true);
+                false);
         DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
 
         decodeThread.start();
 
         long t1 = System.currentTimeMillis();
-        sender.sendWindowedFrame();
+        sender.sendFrame();
         long t2 = System.currentTimeMillis();
         System.out.println("\nDone, time passed: "+(t2-t1)+"ms.");
 
@@ -59,28 +59,36 @@ public class Sender {
         audioHw.start();
 
         SW_Sender sender = new SW_Sender("src/INPUT.bin",
-                15,
+                1,
                 audioHw,
-                40,
-                1400,
+                80,
+                1000,
                 Config.NODE_2_CODE,
                 Config.NODE_1_CODE,
-                Config.TYPE_PERF,
+                Config.TYPE_DATA,
                 false);
-        DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
+        SW_Receiver receiver = new SW_Receiver(audioHw);
+        DecodeThread decodeThread = new DecodeThread(audioHw, receiver, sender, Config.NODE_1_CODE);
 
         decodeThread.start();
         macperf macperf_thread = new macperf(sender);
         macperf_thread.start();
 
         long t1 = System.currentTimeMillis();
-        sender.sendWindowedFrame();
+        sender.sendFrame();
         long t2 = System.currentTimeMillis();
         System.out.println("\nDone, time passed: "+(t2-t1)+"ms.");
+
+        try{
+            Thread.sleep(10000);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         decodeThread.stopDecoding();
         macperf_thread.stop_running();
         audioHw.stop();
+        receiver.writeFile();
     }
 
     public static void main_ping(){
@@ -106,8 +114,8 @@ public class Sender {
     }
 
     public static void main(final String[] args) {
-        main_part2();
-//        main_part3();
+//        main_part2();
+        main_part3();
 //        main_perf();
 //        main_ping();
     }

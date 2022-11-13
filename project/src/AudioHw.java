@@ -18,7 +18,7 @@ public class AudioHw implements AsioDriverListener {
 	private float[] input;
 
 	// MAC state machine
-	private int state;
+	public int state;
 
 	// for preamble use
 	myQueue syncFIFO = new myQueue(Config.preamble.length);
@@ -36,8 +36,6 @@ public class AudioHw implements AsioDriverListener {
 
 	public int start_time;
 	public int end_time;
-
-	public boolean channelFree;
 
 	public void init() {
 		activeChannels = new HashSet<AsioChannel>();  // create a Set of AsioChannels
@@ -82,7 +80,7 @@ public class AudioHw implements AsioDriverListener {
 
 			playLoc = 0;
 
-			channelFree = false;
+			state = Config.STATE_FRAME_DETECTION;
 		}
 	}
 
@@ -98,15 +96,18 @@ public class AudioHw implements AsioDriverListener {
 		asioDriver.shutdownAndUnloadDriver();  // tear everything down
 	}
 
-	public void PHYSend(float[] track, boolean waitChannelFree){
+	public boolean PHYSend(float[] track, boolean waitChannelFree){
 		int start_time = (int)System.currentTimeMillis();
 		int wait_cnt = 0;
-		while (playList != null && playLoc < playList.length || (!channelFree && waitChannelFree && wait_cnt < Config.MAC_RETRY_LIMIT)){
-			if ((int)System.currentTimeMillis() - start_time > 100 && waitChannelFree){
+		while (playList != null && playLoc < playList.length || (state != Config.STATE_FRAME_TX && waitChannelFree)){
+			if ((int)System.currentTimeMillis() - start_time > 200 && waitChannelFree && state != Config.STATE_FRAME_RX){
 				start_time = (int)System.currentTimeMillis();
 				wait_cnt ++;
+				if (wait_cnt > Config.MAC_RETRY_LIMIT){
+					return false;
+				}
 				playLoc = 0;
-				System.out.println("1");
+				System.out.println("Retry...");
 			}
 			Thread.yield();
 		}
@@ -114,7 +115,16 @@ public class AudioHw implements AsioDriverListener {
 		playList = track;
 		playLoc = 0;
 		start_time = (int)System.currentTimeMillis();
-		channelFree = false;
+		return true;
+	}
+
+	public boolean isIdle(){
+		for (float sample : input){
+			if (sample > 0.01f){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	// Detect preamble.
@@ -163,6 +173,7 @@ public class AudioHw implements AsioDriverListener {
 				playLoc++;
 				if (playLoc == playList.length){
 					end_time = (int)System.currentTimeMillis();
+					state = Config.STATE_FRAME_DETECTION;
 				}
 			}
 			else {

@@ -69,6 +69,58 @@ public class SW_Sender {
         waitChannelFree = _waitChannelFree;
     }
 
+    public void sendFrame(){
+        int current_frame = LAR;
+        window_timer = (int)System.currentTimeMillis();
+        while (LAR < frame_num - 1){
+//            System.out.println("current frame: " + current_frame);
+//            System.out.println("LAR: " + LAR);
+            if (current_frame <= LAR || (int)System.currentTimeMillis() - window_timer > window_duration){
+                if ((int)System.currentTimeMillis() - window_timer > window_duration){
+                    // reached retry limit
+                    if (sentList[current_frame] == Config.MAC_RETRY_LIMIT){
+                        System.out.println("\n"+current_frame + " reached retry limit.");
+                        System.out.println("Stop sending.");
+                        return;
+                    }
+
+                    // out of time, send current frame again
+                    System.out.println("Out of time, send " + current_frame + " again.");
+                }
+
+                current_frame = LAR + 1;
+
+
+                while (!audioHw.isIdle()){
+                    Thread.yield();
+                }
+
+                // sending
+                System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));
+                if(waitChannelFree) {
+                    DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
+                }
+
+                if (!audioHw.PHYSend(track_list.get(current_frame), waitChannelFree)){
+                    System.out.println("Send require no reply.");
+                    System.out.println("Stop sending.");
+                    return;
+                }
+                sentList[current_frame]++;
+
+                window_timer = (int)System.currentTimeMillis();
+
+                try{
+                    Thread.sleep(millisPerFrame);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            Thread.yield();
+        }
+    }
+
     public void sendWindowedFrame(){
         int current_frame;
         while(LAR < frame_num - 1){
@@ -81,7 +133,7 @@ public class SW_Sender {
                         return;
                     }
                     if(current_frame>LAR) {
-//                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
+                        System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
                         if(waitChannelFree) {
                             DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
                         }
@@ -110,6 +162,7 @@ public class SW_Sender {
         id--;
         if(id > LAR && id <= LAR+window_size) {
             LAR = id;
+//            System.out.println("LAR: " + LAR);
             window_timer = (int)System.currentTimeMillis();
         }
     }
