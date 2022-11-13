@@ -90,10 +90,11 @@ public class SW_Sender {
 
                 current_frame = LAR + 1;
 
-
                 while (!audioHw.isIdle()){
-                    Thread.yield();
+                    System.out.print("\rNoisy");
+//                    Thread.yield();
                 }
+                System.out.println();
 
                 // sending
                 System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));

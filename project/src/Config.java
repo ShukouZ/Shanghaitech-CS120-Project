@@ -10,7 +10,7 @@ public class Config {
 	// Carrier Frequency
 	public final static int PHY_CARRIER_FREQ = 6000;
 	
-	public final static int MAC_RETRY_LIMIT = 10;
+	public final static int MAC_RETRY_LIMIT = 50;
 
 	public final static int SAMPLE_PER_BIT = 4;
 

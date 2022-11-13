@@ -120,7 +120,7 @@ public class AudioHw implements AsioDriverListener {
 
 	public boolean isIdle(){
 		for (float sample : input){
-			if (sample > 0.01f){
+			if (Math.abs(sample) > 0.0003f){
 				return false;
 			}
 		}
@@ -140,7 +140,7 @@ public class AudioHw implements AsioDriverListener {
 
 			syncPower_debug = syncFIFO.dot_product(Config.preamble);
 
-			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 8.0f)) {
+			if ((syncPower_debug > syncPower_localMax) && (syncPower_debug > 4.0f)) {
 				syncPower_localMax = syncPower_debug;
 				start_index = i;
 				break;
