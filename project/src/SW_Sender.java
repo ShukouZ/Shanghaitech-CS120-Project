@@ -92,12 +92,12 @@ public class SW_Sender {
 
                 while (!audioHw.isIdle()){
                     System.out.print("\rNoisy");
-//                    Thread.yield();
+                    Thread.yield();
                 }
                 System.out.println();
 
                 // sending
-                System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));
+//                System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));
                 if(waitChannelFree) {
                     DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
                 }

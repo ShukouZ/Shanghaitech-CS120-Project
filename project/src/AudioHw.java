@@ -120,7 +120,7 @@ public class AudioHw implements AsioDriverListener {
 
 	public boolean isIdle(){
 		for (float sample : input){
-			if (Math.abs(sample) > 0.0003f){
+			if (Math.abs(sample) > 0.02f){
 				return false;
 			}
 		}

@@ -34,7 +34,7 @@ public class DecodeThread extends Thread {
         float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true);
         audioHw.PHYSend(track, false);
         if (type == Config.TYPE_ACK){
-            System.out.println("Send ACK: " + id);
+//            System.out.println("Send ACK: " + id);
         } else if (type == Config.TYPE_SEND_REQ) {
 //            System.out.println("Send require...");
         }else if (type == Config.TYPE_SEND_REPLY) {
@@ -137,7 +137,7 @@ public class DecodeThread extends Thread {
 
                 if (decoded_block_data == null) {
                     // not found
-                    System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
+//                    System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
                 }
                 else {
                     // get dest
