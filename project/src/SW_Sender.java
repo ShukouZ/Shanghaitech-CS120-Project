@@ -32,8 +32,9 @@ public class SW_Sender {
     private final boolean waitChannelFree;
 
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type, boolean _waitChannelFree){
-        // get 6250 bytes of data
-        byte[] byte_data = Util.readFileByBytes(filePath, Config.FILE_BYTES);
+        byte[] file_data = Util.readFileByBytes(filePath);
+        byte[] byte_data = new byte[(file_data.length * 8 / Config.PAYLOAD_SIZE + 1) * Config.PAYLOAD_SIZE / 8];
+        System.arraycopy(file_data, 0, byte_data, 0, file_data.length);
         // get 6250*8 bits of data
         ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(byte_data)).boxed().collect(Collectors.toList());
 
@@ -90,14 +91,14 @@ public class SW_Sender {
 
                 current_frame = LAR + 1;
 
-                while (!audioHw.isIdle()){
-                    System.out.print("\rNoisy");
-                    Thread.yield();
-                }
-                System.out.println();
+//                while (!audioHw.isIdle()){
+//                    System.out.print("\rNoisy");
+//                    Thread.yield();
+//                }
+//                System.out.println();
 
                 // sending
-//                System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));
+                System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));
                 if(waitChannelFree) {
                     DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
                 }
