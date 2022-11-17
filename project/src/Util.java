@@ -9,22 +9,23 @@ import java.util.stream.IntStream;
 import javax.sound.sampled.AudioFormat;
 
 public class Util {
-	public static byte[] readFileByBytes(String fileName,int datalen) {
-		byte[] bytes = new byte[datalen];
-		int index = 0;
+	public static byte[] readFileByBytes(String fileName) {
+		ArrayList<byte[]> buffers = new ArrayList<>();
+		int data_len = 0;
 		FileInputStream input = null;
 		try {
 			input = new FileInputStream(fileName);
-			byte[] buffer = new byte[1024];
 			while (true) {
+				byte[] buffer = new byte[1024];
 				int len = input.read(buffer);
 				if (len == -1) {
 					break;
 				}
-				for (int i = 0; i < buffer.length && index < datalen; i++) {
-					bytes[index] = buffer[i];
-					index++;
+				else
+				{
+					data_len += len;
 				}
+				buffers.add(buffer);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -35,6 +36,15 @@ public class Util {
 				throw new RuntimeException(e);
 			}
 		}
+
+		byte[] bytes = new byte[data_len];
+//		System.out.println("data_len:"+ data_len);
+//		System.out.println(buffers.size());
+
+		for (int i = 0; i < data_len; i++){
+			bytes[i] = buffers.get(i / 1024)[i % 1024];
+		}
+
 		return bytes;
 	}
 
