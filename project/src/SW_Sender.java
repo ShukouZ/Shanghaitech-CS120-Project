@@ -220,12 +220,12 @@ public class SW_Sender {
         }
         if(!isASK){
             for(int n = 0; n < Config.DEST_IP_SIZE; n++){
-                bit = (int)(destIP & (1 << n)) >> n;
+                bit = (int)((destIP & (1 << n)) >> n);
                 frame.add(bit);
             }
 
             for(int n = 0; n < Config.SRC_IP_SIZE; n++){
-                bit = (int)(srcIP & (1 << n)) >> n;
+                bit = (int)((srcIP & (1 << n)) >> n);
                 frame.add(bit);
             }
 
