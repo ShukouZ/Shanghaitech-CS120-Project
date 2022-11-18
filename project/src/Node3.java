@@ -1,12 +1,15 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class Part2_Receiver {
-    public static void main(String[] args) throws IOException {
+public class Node3 {
+    public static void node3_receive() throws IOException{
         DatagramSocket ds=new DatagramSocket(1234); //接收端口号的消息
         while(true){
             byte[] bys=new byte[1024];
@@ -16,7 +19,6 @@ public class Part2_Receiver {
             byte[] data = dp.getData();
 
             ArrayList<Integer> decoded_block_data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(data)).boxed().collect(Collectors.toList());
-
 
             int headSum = 0;
 
@@ -83,5 +85,26 @@ public class Part2_Receiver {
             System.out.println("--------------------------------------------------------------------------");
         }
         //ds.close();
+    }
+
+    public static void node3_send() throws IOException{
+        ArrayList<byte[]> data_bytes = Util.readTxtByBytes("src/INPUT2.txt");
+
+        DatagramSocket ds=new DatagramSocket(); //建立通讯socket
+
+        for (byte[] data: data_bytes){
+            DatagramPacket dp=new DatagramPacket(data,data.length, InetAddress.getByName("10.20.170.250"),Config.node3_Port);//建立数据包，声明长度，接收端主机，端口号
+            ds.send(dp);//发送数据
+            try{
+                Thread.sleep(1000);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+        ds.close();
+
+    }
+    public static void main(String[] args) throws IOException {
+        node3_send();
     }
 }

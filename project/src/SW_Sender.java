@@ -31,7 +31,8 @@ public class SW_Sender {
 
     private final boolean waitChannelFree;
 
-    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type, boolean _waitChannelFree){
+    SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type, boolean _waitChannelFree,
+              String destIP, String srcIP, int destPort, int srcPort){
         // get list of variable-size frames
         ArrayList<byte[]> file_data = Util.readTxtByBytes(filePath);
         // generate soundtrack for each frame
@@ -43,7 +44,7 @@ public class SW_Sender {
             }
             ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(lineData)).boxed().collect(Collectors.toList());
             track_list.add(frameToTrack(data, _dest, _src, type, frame_num++, false,
-                    Util.ipToLong(Config.destIP), Util.ipToLong(Config.srcIP), Config.destPort, Config.srcPort, data.size()));
+                    Util.ipToLong(destIP), Util.ipToLong(srcIP), destPort, srcPort, data.size()));
         }
 
         // init the audio driver

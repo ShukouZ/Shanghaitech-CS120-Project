@@ -28,7 +28,7 @@ public class SW_Receiver {
         return  frame_list.size();
     }
 
-    public void writeFile(){
+    public byte[] writeFile(String fileName){
         StringBuilder output = new StringBuilder();
         for(ArrayList<Integer> frame: frame_list){
             for (int datum: frame){
@@ -40,7 +40,8 @@ public class SW_Receiver {
             // System.out.print(bitStr+"|");
             bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
         }
-        Util.writeFileByBytes(bytes, "src/OUTPUT.bin");
+        Util.writeFileByBytes(bytes, fileName);
+        return bytes;
     }
 
 }

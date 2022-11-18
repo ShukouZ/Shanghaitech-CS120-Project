@@ -33,6 +33,7 @@ public class Config {
 	// device node code
 	public final static int NODE_1_CODE = 1;
 	public final static int NODE_2_CODE = 2;
+	public final static int NODE_3_CODE = 3;
 
 	//                  	  FRAME DATA
 	// 		not	encoded							encoded
@@ -62,8 +63,9 @@ public class Config {
 	public final static int ACK_SAMPLE_SIZE = SAMPLE_PER_BIT * (ACK_SIZE + CRC_SIZE);
 	public final static int FILE_BYTES = 1800;
 
-	public final static String destIP = "10.20.170.250";
-	public final static String srcIP = "192.168.1.2";
-	public final static int destPort = 1234;
-	public final static int srcPort = 4321;
+	public final static String node3_IP = "10.20.170.250";
+	public final static String node1_IP = "192.168.1.2";
+	public final static int node1_Port = 4321;
+	public final static int node3_Port = 1234;
+
 }
