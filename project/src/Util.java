@@ -1,6 +1,7 @@
 // Borrowed from https://github.com/youcunhan/CS120ComputerNetwork/blob/master/CS120ComputerNetwork-proj2/Util.java
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -149,6 +150,31 @@ public class Util {
 		}
 		Util.writeFileByBytes(bytes, "OUTPUT.bin");
 	}
+
+	public static ArrayList<byte[]> readTxtByBytes(String fileName) {
+		File fileInput = new File(fileName);
+		String str = "";
+
+		ArrayList<byte[]> input = new ArrayList<>();
+
+		try {
+			FileInputStream file = new FileInputStream(fileInput);
+			BufferedReader br = new BufferedReader(new InputStreamReader(file, "UTF-8"));// 构造一个BufferedReader类来读取文件
+			while ((str = br.readLine()) != null) {
+				input.add(str.getBytes(StandardCharsets.UTF_8));
+				try {
+					Thread.sleep(1000);  // ms
+				} catch (final InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("读入文件错误");
+		}
+
+		return input;
+	}
+
 
 	public static void main(String[] args) {
 		byte[] bits = new byte[5000*8];
