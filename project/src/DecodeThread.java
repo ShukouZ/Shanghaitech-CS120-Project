@@ -4,6 +4,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DecodeThread extends Thread {
@@ -261,9 +262,13 @@ public class DecodeThread extends Thread {
                             // System.out.print(bitStr+"|");
                             bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
                         }
+
+                        System.out.println(new String(bytes, 14, bytes.length - 14));
+
                         // UDP send packet
                         try {
-                            DatagramPacket dp=new DatagramPacket(bytes,bytes.length, InetAddress.getByName(Util.longToIP(destIP)),destPort);//建立数据包，声明长度，接收端主机，端口号
+//                            System.out.println(Arrays.toString(bytes));
+                            DatagramPacket dp=new DatagramPacket(bytes,bytes.length, InetAddress.getByName(Util.longToIP(destIP)), destPort);//建立数据包，声明长度，接收端主机，端口号
                             ds.send(dp);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
