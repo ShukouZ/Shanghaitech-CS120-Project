@@ -170,19 +170,54 @@ public class Util {
 		return input;
 	}
 
+	// 255
+	// 10.20.171.42
+	public static String longToIP(long longIP){
+		StringBuffer sb = new StringBuffer("");
 
-	public static void main(String[] args) {
-		byte[] bits = new byte[5000*8];
-		for(int i=0;i<5000*8;i++){
-			int max = 2, min = 0;
-			byte ran2 = (byte) (Math.random() * (max - min) + min);
-			bits[i] = ran2;
+		try {
+			sb.append(String.valueOf(longIP>>>24));
+			sb.append(".");
+			sb.append(String.valueOf((longIP&0x00FFFFFF)>>>16));
+			sb.append(".");
+			sb.append(String.valueOf((longIP&0x0000FFFF)>>>8));
+			sb.append(".");
+			sb.append(String.valueOf((longIP&0x000000FF)));
+
+			return sb.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
 		}
-		byte[] databytes = Util.BitsTobytes(bits);
-		Util.writeFileByBytes(databytes, "INPUT2to1.bin");
-		
 	}
 
+	public static long ipToLong(String strIp){
+		long [] ip = new long[4];
 
+		try {
+			//先找出字符串中点的位置
+			int position1 = strIp.indexOf(".");
+			int position2 = strIp.indexOf(".",position1+1);
+			int position3 = strIp.indexOf(".",position2+1);
+			//将点分隔的字符串转换为整数
+			ip[0] = Long.parseLong(strIp.substring(0,position1));
+			ip[1] = Long.parseLong(strIp.substring(position1+1,position2));
+			ip[2] = Long.parseLong(strIp.substring(position2+1,position3));
+			ip[3] = Long.parseLong(strIp.substring(position3+1));
+
+			return (ip[0]<<24)+(ip[1]<<16)+(ip[2]<<8)+(ip[3]);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+
+	}
+
+	public static void main(String[] args) {
+		String ip = "192.168.0.1";
+		System.out.println(ipToLong(ip));
+		System.out.println(longToIP(ipToLong(ip)));
+	}
 
 }

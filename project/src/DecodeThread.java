@@ -1,3 +1,8 @@
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,6 +116,13 @@ public class DecodeThread extends Thread {
         ArrayList<Float> data_signal;
         ArrayList<Integer> decoded_block_data;
 
+        DatagramSocket ds= null; //建立通讯socket
+        try {
+            ds = new DatagramSocket();
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
+        }
+
         while (running) {
             data_signal = audioHw.getFrame(frame_decoded_num);
 
@@ -181,6 +193,7 @@ public class DecodeThread extends Thread {
                         id += decoded_block_data.get(headSum + i) << i;
                     }
                     headSum += Config.SEQ_SIZE;
+                    int UDPStart = headSum;
 //                    System.out.println("id: " + id);
 
                     if (type == Config.TYPE_ACK) {
@@ -191,18 +204,18 @@ public class DecodeThread extends Thread {
                     }
 
                     // get destIP
-                    int destIP = 0;
+                    long destIP = 0;
                     for (int i = 0; i < Config.DEST_IP_SIZE; i++) {
-                        destIP += decoded_block_data.get(headSum + i) << i;
+                        destIP += (long) decoded_block_data.get(headSum + i) << i;
                     }
-                    System.out.println("destIP: " + destIP);
+                    System.out.println("destIP: " + Util.longToIP(destIP));
                     headSum += Config.DEST_IP_SIZE;
                     // get srcIP
-                    int srcIP = 0;
+                    long srcIP = 0;
                     for (int i = 0; i < Config.SRC_IP_SIZE; i++) {
-                        srcIP += decoded_block_data.get(headSum + i) << i;
+                        srcIP += (long) decoded_block_data.get(headSum + i) << i;
                     }
-                    System.out.println("srcIP: " + srcIP);
+                    System.out.println("srcIP: " +  Util.longToIP(srcIP));
 
                     headSum += Config.SRC_IP_SIZE;
                     // get destPort
@@ -237,6 +250,25 @@ public class DecodeThread extends Thread {
                         receiver.storeFrame(decoded_block_data.subList(headSum, validDataLen + headSum), id);
                         sendACK(src, node_id, Config.TYPE_ACK, receiver.getReceivedSize());
                         audioHw.state = Config.STATE_FRAME_DETECTION;
+
+                        // transfer data(int) to data(bytes)
+                        StringBuilder output = new StringBuilder();
+                        for (int datum: decoded_block_data.subList(UDPStart, headSum+validDataLen)){
+                            output.append(datum);
+                        }
+                        byte[] bytes = new byte[output.length() / 8];
+                        for (int i = 0; i < output.length() / 8; i++) {
+                            // System.out.print(bitStr+"|");
+                            bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
+                        }
+                        // UDP send packet
+                        try {
+                            DatagramPacket dp=new DatagramPacket(bytes,bytes.length, InetAddress.getByName(Util.longToIP(destIP)),destPort);//建立数据包，声明长度，接收端主机，端口号
+                            ds.send(dp);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+
                     }
                     else if (type == Config.TYPE_PERF){
 //                        System.out.println("Data block " + frame_decoded_num + " received perf: " + id);

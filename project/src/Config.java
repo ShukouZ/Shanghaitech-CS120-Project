@@ -62,8 +62,8 @@ public class Config {
 	public final static int ACK_SAMPLE_SIZE = SAMPLE_PER_BIT * (ACK_SIZE + CRC_SIZE);
 	public final static int FILE_BYTES = 1800;
 
-	public final static int destIP = 1011250;
-	public final static int srcIP = 1011251;
+	public final static String destIP = "10.20.170.250";
+	public final static String srcIP = "192.168.1.2";
 	public final static int destPort = 1234;
 	public final static int srcPort = 4321;
 }
