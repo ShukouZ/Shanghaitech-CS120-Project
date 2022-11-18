@@ -40,7 +40,7 @@ public class Node1 {
         DecodeThread decodeThread  = new DecodeThread(audioHw, receiver, null, Config.NODE_1_CODE);
         decodeThread.start();
         try {
-            Thread.sleep(20000);  // ms
+            Thread.sleep(60000);  // ms
         } catch (final InterruptedException e) {
             e.printStackTrace();
         }
@@ -49,6 +49,6 @@ public class Node1 {
         audioHw.stop();
     }
     public static void main(final String[] args) {
-        node1_send();
+        node1_receive();
     }
 }
