@@ -52,13 +52,14 @@ public class DecodeThread extends Thread {
     private ArrayList<Integer> decodeFrame(ArrayList<Float> data_signal, int offset){
         float sum;
         int data_size;
-        if (data_signal.size() == Config.FRAME_SAMPLE_SIZE + Config.MAX_OFFSET){
-            data_size = Config.FRAME_SIZE + Config.CRC_SIZE;
-//            System.out.println("Frame");
-        }
-        else {
+//        System.out.println(data_signal.size());
+        if (data_signal.size() < Config.FRAME_SAMPLE_SIZE + Config.MAX_OFFSET){
             data_size = Config.ACK_SIZE + Config.CRC_SIZE;
 //            System.out.println("ACK");
+        }
+        else {
+            data_size = Config.FRAME_SIZE + Config.CRC_SIZE;
+//            System.out.println("Frame");
         }
 
         // decode frame
@@ -182,49 +183,45 @@ public class DecodeThread extends Thread {
                     headSum += Config.SEQ_SIZE;
 //                    System.out.println("id: " + id);
 
-                    // get destIP
-                    int destIP = 0;
-                    for (int i = 0; i < Config.DEST_IP_SIZE; i++)
-                    {
-                        destIP += decoded_block_data.get(headSum + i) << i;
-                    }
-                    headSum += Config.DEST_IP_SIZE;
-                    // get srcIP
-                    int srcIP = 0;
-                    for (int i = 0; i < Config.SRC_IP_SIZE; i++)
-                    {
-                        srcIP += decoded_block_data.get(headSum + i) << i;
-                    }
-                    headSum += Config.SRC_IP_SIZE;
-                    // get destPort
-                    int destPort = 0;
-                    for (int i = 0; i < Config.DEST_PORT_SIZE; i++)
-                    {
-                        destPort += decoded_block_data.get(headSum + i) << i;
-                    }
-                    headSum += Config.DEST_PORT_SIZE;
-                    // get srcPort
-                    int srcPort = 0;
-                    for (int i = 0; i < Config.SRC_PORT_SIZE; i++)
-                    {
-                        srcPort += decoded_block_data.get(headSum + i) << i;
-                    }
-                    headSum += Config.SRC_PORT_SIZE;
-                    // get validDataLen
-                    int validDataLen = 0;
-                    for (int i = 0; i < Config.VALID_DATA_SIZE; i++)
-                    {
-                        validDataLen += decoded_block_data.get(headSum + i) << i;
-                    }
-                    headSum += Config.VALID_DATA_SIZE;
-
-
                     if (type == Config.TYPE_ACK) {
                         // ACK
                         sender.receiveACK(id);
 //                        System.out.println("Data block " + frame_decoded_num + " received ACK: " + id);
 
-                    } else if (type == Config.TYPE_DATA){
+                    }else {
+                        // get destIP
+                        int destIP = 0;
+                        for (int i = 0; i < Config.DEST_IP_SIZE; i++) {
+                            destIP += decoded_block_data.get(headSum + i) << i;
+                        }
+                        headSum += Config.DEST_IP_SIZE;
+                        // get srcIP
+                        int srcIP = 0;
+                        for (int i = 0; i < Config.SRC_IP_SIZE; i++) {
+                            srcIP += decoded_block_data.get(headSum + i) << i;
+                        }
+                        headSum += Config.SRC_IP_SIZE;
+                        // get destPort
+                        int destPort = 0;
+                        for (int i = 0; i < Config.DEST_PORT_SIZE; i++) {
+                            destPort += decoded_block_data.get(headSum + i) << i;
+                        }
+                        headSum += Config.DEST_PORT_SIZE;
+                        // get srcPort
+                        int srcPort = 0;
+                        for (int i = 0; i < Config.SRC_PORT_SIZE; i++) {
+                            srcPort += decoded_block_data.get(headSum + i) << i;
+                        }
+                        headSum += Config.SRC_PORT_SIZE;
+                        // get validDataLen
+                        int validDataLen = 0;
+                        for (int i = 0; i < Config.VALID_DATA_SIZE; i++) {
+                            validDataLen += decoded_block_data.get(headSum + i) << i;
+                        }
+                        headSum += Config.VALID_DATA_SIZE;
+                    }
+
+                    if (type == Config.TYPE_DATA){
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
                         receiver.storeFrame(decoded_block_data.subList(headSum, Config.PAYLOAD_SIZE + headSum), id);
