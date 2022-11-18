@@ -31,7 +31,7 @@ public class DecodeThread extends Thread {
     }
 
     public static void sendACK(int dest, int src, int type, int id){
-        float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true);
+        float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true, 0, 0, 0, 0, 0);
         audioHw.PHYSend(track, false);
         if (type == Config.TYPE_ACK){
 //            System.out.println("Send ACK: " + id);
@@ -140,6 +140,8 @@ public class DecodeThread extends Thread {
 //                    System.out.println(frame_decoded_num + " data block receiving ERR!!!!!!!!");
                 }
                 else {
+                    // set the headSum
+                    int headSum = 0;
                     // get dest
                     int dest = 0;
                     for (int i = 0; i < Config.DEST_SIZE; i++)
@@ -151,30 +153,71 @@ public class DecodeThread extends Thread {
 //                        System.out.println("dest: " + dest);
                         continue;
                     }
+                    headSum += Config.DEST_SIZE;
 
                     // get src
                     int src = 0;
                     for (int i = 0; i < Config.SRC_SIZE; i++)
                     {
-                        src += decoded_block_data.get(Config.DEST_SIZE + i) << i;
+                        src += decoded_block_data.get(headSum + i) << i;
                     }
+                    headSum += Config.SRC_SIZE;
 //                    System.out.println("src: " + src);
 
                     // get type
                     int type = 0;
                     for (int i = 0; i < Config.TYPE_SIZE; i++)
                     {
-                        type += decoded_block_data.get(Config.DEST_SIZE + Config.SRC_SIZE + i) << i;
+                        type += decoded_block_data.get(headSum + i) << i;
                     }
+                    headSum += Config.TYPE_SIZE;
 //                    System.out.println("type: " + type);
 
                     // get id
                     int id = 0;
                     for (int i = 0; i < Config.SEQ_SIZE; i++)
                     {
-                        id += decoded_block_data.get(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + i) << i;
+                        id += decoded_block_data.get(headSum + i) << i;
                     }
+                    headSum += Config.SEQ_SIZE;
 //                    System.out.println("id: " + id);
+
+                    // get destIP
+                    int destIP = 0;
+                    for (int i = 0; i < Config.DEST_IP_SIZE; i++)
+                    {
+                        destIP += decoded_block_data.get(headSum + i) << i;
+                    }
+                    headSum += Config.DEST_IP_SIZE;
+                    // get srcIP
+                    int srcIP = 0;
+                    for (int i = 0; i < Config.SRC_IP_SIZE; i++)
+                    {
+                        srcIP += decoded_block_data.get(headSum + i) << i;
+                    }
+                    headSum += Config.SRC_IP_SIZE;
+                    // get destPort
+                    int destPort = 0;
+                    for (int i = 0; i < Config.DEST_PORT_SIZE; i++)
+                    {
+                        destPort += decoded_block_data.get(headSum + i) << i;
+                    }
+                    headSum += Config.DEST_PORT_SIZE;
+                    // get srcPort
+                    int srcPort = 0;
+                    for (int i = 0; i < Config.SRC_PORT_SIZE; i++)
+                    {
+                        srcPort += decoded_block_data.get(headSum + i) << i;
+                    }
+                    headSum += Config.SRC_PORT_SIZE;
+                    // get validDataLen
+                    int validDataLen = 0;
+                    for (int i = 0; i < Config.VALID_DATA_SIZE; i++)
+                    {
+                        validDataLen += decoded_block_data.get(headSum + i) << i;
+                    }
+                    headSum += Config.VALID_DATA_SIZE;
+
 
                     if (type == Config.TYPE_ACK) {
                         // ACK
@@ -184,7 +227,7 @@ public class DecodeThread extends Thread {
                     } else if (type == Config.TYPE_DATA){
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
-                        receiver.storeFrame(decoded_block_data.subList(Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE, Config.PAYLOAD_SIZE + Config.DEST_SIZE + Config.SRC_SIZE + Config.TYPE_SIZE + Config.SEQ_SIZE), id);
+                        receiver.storeFrame(decoded_block_data.subList(headSum, Config.PAYLOAD_SIZE + headSum), id);
                         sendACK(src, node_id, Config.TYPE_ACK, receiver.getReceivedSize());
                         audioHw.state = Config.STATE_FRAME_DETECTION;
                     }

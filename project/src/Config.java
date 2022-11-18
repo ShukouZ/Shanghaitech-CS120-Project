@@ -47,12 +47,23 @@ public class Config {
 	public final static int SRC_SIZE = 4;
 	public final static int TYPE_SIZE = 4;
 	public final static int SEQ_SIZE = 8;
-	public final static int PAYLOAD_SIZE = 256;
+	public final static int DEST_IP_SIZE = 32;
+	public final static int SRC_IP_SIZE = 32;
+	public final static int DEST_PORT_SIZE = 16;
+	public final static int SRC_PORT_SIZE = 16;
+	public final static int VALID_DATA_SIZE = 9;
+	public final static int PAYLOAD_SIZE = 320;
 	public final static int CRC_SIZE = 32;
 	public final static int ACK_SIZE = DEST_SIZE + SRC_SIZE + TYPE_SIZE + SEQ_SIZE;
-	public final static int FRAME_SIZE = DEST_SIZE + SRC_SIZE + TYPE_SIZE + SEQ_SIZE + PAYLOAD_SIZE;
+	public final static int FRAME_SIZE = DEST_SIZE + SRC_SIZE + TYPE_SIZE + SEQ_SIZE
+			+ DEST_IP_SIZE + SRC_IP_SIZE + DEST_PORT_SIZE + SRC_PORT_SIZE + VALID_DATA_SIZE	+ PAYLOAD_SIZE;
 
 	public final static int FRAME_SAMPLE_SIZE = SAMPLE_PER_BIT * (FRAME_SIZE + CRC_SIZE);
 	public final static int ACK_SAMPLE_SIZE = SAMPLE_PER_BIT * (ACK_SIZE + CRC_SIZE);
 	public final static int FILE_BYTES = 1800;
+
+	public final static int destIP = 1011250;
+	public final static int srcIP = 1011251;
+	public final static int destPort = 1234;
+	public final static int srcPort = 4321;
 }

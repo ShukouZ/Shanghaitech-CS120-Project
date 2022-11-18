@@ -42,7 +42,8 @@ public class SW_Sender {
         frame_num = data.size() / Config.PAYLOAD_SIZE;
         track_list = new ArrayList<>();
         for (int i = 0; i< frame_num; i++){
-            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), _dest, _src, type, i, false));
+            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), _dest, _src, type, i, false,
+                    Config.destIP, Config.srcIP, Config.destPort, Config.srcPort, Config.PAYLOAD_SIZE));
         }
 
         // init the audio driver
@@ -170,8 +171,9 @@ public class SW_Sender {
     }
 
 
-
-    static float[] frameToTrack(List<Integer> frame_data, int dest, int src, int type, int idx, boolean isASK){
+// 10.20.171.42
+    static float[] frameToTrack(List<Integer> frame_data, int dest, int src, int type, int idx, boolean isASK,
+                                int destIP, int srcIP, int destPort, int srcPort, int validDataLen){
         // initialization
         List<Integer> frame;
         int zero_buffer_len;
@@ -217,9 +219,38 @@ public class SW_Sender {
             bit = (idx & (1 << n)) >> n;
             frame.add(bit);
         }
+        if(!isASK){
+            for(int n = 0; n < Config.DEST_IP_SIZE; n++){
+                bit = (destIP & (1 << n)) >> n;
+                frame.add(bit);
+            }
+
+            for(int n = 0; n < Config.SRC_IP_SIZE; n++){
+                bit = (srcIP & (1 << n)) >> n;
+                frame.add(bit);
+            }
+
+            for(int n = 0; n < Config.DEST_PORT_SIZE; n++){
+                bit = (destPort & (1 << n)) >> n;
+                frame.add(bit);
+            }
+
+            for(int n = 0; n < Config.SRC_PORT_SIZE; n++){
+                bit = (srcPort & (1 << n)) >> n;
+                frame.add(bit);
+            }
+
+            for(int n = 0; n < Config.VALID_DATA_SIZE; n++){
+                bit = (validDataLen & (1 << n)) >> n;
+                frame.add(bit);
+            }
+        }
         //// part 5: add frame data
         if(frame_data != null) {
             frame.addAll(frame_data);
+            for(int i=0; i<(Config.PAYLOAD_SIZE-validDataLen); i++){
+                frame.add(0);
+            }
         }
         //// part 6: cal CRC
         List<Integer> crc_code = crc32.get_crc(frame);
