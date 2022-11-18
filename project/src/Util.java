@@ -162,11 +162,6 @@ public class Util {
 			BufferedReader br = new BufferedReader(new InputStreamReader(file, "UTF-8"));// 构造一个BufferedReader类来读取文件
 			while ((str = br.readLine()) != null) {
 				input.add(str.getBytes(StandardCharsets.UTF_8));
-				try {
-					Thread.sleep(1000);  // ms
-				} catch (final InterruptedException e) {
-					e.printStackTrace();
-				}
 			}
 		} catch (Exception e) {
 			System.out.println("读入文件错误");

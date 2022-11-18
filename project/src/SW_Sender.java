@@ -8,7 +8,7 @@ public class SW_Sender {
     private final int window_size;
     // last ACK received
     public int LAR;
-    private final int frame_num;
+    private int frame_num;
 
     // generate carrier
     private static final SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_SAMPLING_RATE);
@@ -32,18 +32,18 @@ public class SW_Sender {
     private final boolean waitChannelFree;
 
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type, boolean _waitChannelFree){
-        byte[] file_data = Util.readFileByBytes(filePath);
-        byte[] byte_data = new byte[(file_data.length * 8 / Config.PAYLOAD_SIZE + 1) * Config.PAYLOAD_SIZE / 8];
-        System.arraycopy(file_data, 0, byte_data, 0, file_data.length);
-        // get 6250*8 bits of data
-        ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(byte_data)).boxed().collect(Collectors.toList());
-
+        // get list of variable-size frames
+        ArrayList<byte[]> file_data = Util.readTxtByBytes(filePath);
         // generate soundtrack for each frame
-        frame_num = data.size() / Config.PAYLOAD_SIZE;
+        frame_num = 0;
         track_list = new ArrayList<>();
-        for (int i = 0; i< frame_num; i++){
-            track_list.add(frameToTrack(data.subList(i*Config.PAYLOAD_SIZE, (i+1)*Config.PAYLOAD_SIZE), _dest, _src, type, i, false,
-                    Config.destIP, Config.srcIP, Config.destPort, Config.srcPort, Config.PAYLOAD_SIZE));
+        for (byte[] lineData: file_data){
+            if(lineData.length == 0){
+                continue;
+            }
+            ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(lineData)).boxed().collect(Collectors.toList());
+            track_list.add(frameToTrack(data, _dest, _src, type, frame_num++, false,
+                    Config.destIP, Config.srcIP, Config.destPort, Config.srcPort, data.size()));
         }
 
         // init the audio driver
