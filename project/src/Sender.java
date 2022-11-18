@@ -8,7 +8,7 @@ public class Sender {
                 10,
                 audioHw,
                 50,
-                800,
+                300,
                 Config.NODE_2_CODE,
                 Config.NODE_1_CODE,
                 Config.TYPE_DATA,
@@ -18,7 +18,7 @@ public class Sender {
         decodeThread.start();
 
         long t1 = System.currentTimeMillis();
-        sender.sendWindowedFrame();
+        sender.sendFrame();
         long t2 = System.currentTimeMillis();
         System.out.println("\nDone, time passed: "+(t2-t1)+"ms.");
 
