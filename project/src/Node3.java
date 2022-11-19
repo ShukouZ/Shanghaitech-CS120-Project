@@ -88,20 +88,26 @@ public class Node3 {
     }
 
     public static void node3_send() throws IOException{
-        ArrayList<byte[]> data_bytes = Util.readTxtByBytes("src/INPUT1.txt");
+        ArrayList<byte[]> data_bytes = Util.readTxtByBytes("src/INPUT2.txt");
 
         DatagramSocket ds=new DatagramSocket(); //建立通讯socket
 
         for (byte[] data: data_bytes){
-            DatagramPacket dp=new DatagramPacket(data,data.length, InetAddress.getByName("10.20.170.250"),Config.node3_Port);//建立数据包，声明长度，接收端主机，端口号
+            DatagramPacket dp=new DatagramPacket(data,data.length, InetAddress.getByName(Config.node3_IP),Config.node3_Port);//建立数据包，声明长度，接收端主机，端口号
             ds.send(dp);//发送数据
             System.out.println("Send:"+new String(data, 0, data.length));
             try{
-                Thread.sleep(500);
+                Thread.sleep(100);
             }catch(Exception e){
                 e.printStackTrace();
             }
         }
+
+        String over = "over";
+
+        DatagramPacket dp=new DatagramPacket(over.getBytes(),over.getBytes().length, InetAddress.getByName(Config.node3_IP),Config.node3_Port);//建立数据包，声明长度，接收端主机，端口号
+        ds.send(dp);//发送数据
+
         ds.close();
 
     }

@@ -46,14 +46,19 @@ public class Node2 {
 
         DatagramSocket ds=new DatagramSocket(1234); //接收端口号的消息
         int idx = 0;
-        int time_start = (int)System.currentTimeMillis();
+
 //        ArrayList<float[]> track_list = new ArrayList<>();
-        while((int)System.currentTimeMillis() - time_start < 30000){
+        while(true){
             byte[] bys=new byte[1024];
             DatagramPacket dp=new DatagramPacket(bys,bys.length);//建立信息包
             ds.receive(dp);//将socket的信息接收到dp里
+            byte[] data = Arrays.copyOfRange(dp.getData(), 0, dp.getLength());
+            String s = new String(data);
+            if (s.equals("over")){
+                break;
+            }
 
-            ArrayList<Integer> decoded_data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(Arrays.copyOfRange(dp.getData(), 0, dp.getLength()))).boxed().collect(Collectors.toList());
+            ArrayList<Integer> decoded_data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(data)).boxed().collect(Collectors.toList());
             float[] track = SW_Sender.frameToTrack(decoded_data,
                     Config.NODE_1_CODE,
                     Config.NODE_3_CODE,
@@ -69,10 +74,11 @@ public class Node2 {
             ////////////////////////
             audioHw.PHYSend(track, false);
             ///////////////////////
-            System.out.println("输入数据为：\n"+new String(dp.getData(), 0, dp.getLength()));
+            System.out.println("输入数据为：\n"+s);
             System.out.println("--------------------------------------------------------------------------");
         }
         ds.close();
+        audioHw.stop();
     }
 
     public static void main(final String[] args) throws IOException {
