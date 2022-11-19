@@ -264,6 +264,8 @@ public class DecodeThread extends Thread {
                         }
 
                         System.out.println(new String(bytes, 14, bytes.length - 14));
+                        System.out.println("--------------------------------------------------------------");
+                        System.out.println();
 
                         // UDP send packet
                         try {
