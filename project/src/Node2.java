@@ -35,7 +35,7 @@ public class Node2 {
 //        ////////////////////////////////////////////////////////
         DatagramSocket ds=new DatagramSocket(8818); //建立通讯socket
 
-        DatagramPacket dp=new DatagramPacket(bytes,bytes.length, InetAddress.getByName("10.20.170.250"),12345);//建立数据包，声明长度，接收端主机，端口号
+        DatagramPacket dp=new DatagramPacket(bytes,bytes.length, InetAddress.getByName("10.19.74.124"),12345);//建立数据包，声明长度，接收端主机，端口号
         ds.send(dp);//发送数据
     }
 
@@ -69,7 +69,8 @@ public class Node2 {
                     Util.ipToLong(Config.node3_IP),
                     Config.node1_Port,
                     Config.node3_Port,
-                    decoded_data.size());
+                    decoded_data.size(),
+                    0);
 //            track_list.add(track);
             ////////////////////////
             audioHw.PHYSend(track, false);
@@ -82,6 +83,7 @@ public class Node2 {
     }
 
     public static void main(final String[] args) throws IOException {
-        node2_321();
+//        node2_321();
+        node2_123();
     }
 }
