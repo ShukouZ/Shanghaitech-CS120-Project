@@ -1,8 +1,5 @@
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +19,9 @@ public class DecodeThread extends Thread {
 
     public boolean receivedPing;
 
-    DecodeThread(AudioHw _audioHw, SW_Receiver _receiver, SW_Sender _sender, int _src){
+    private ICMP_Sender icmp_sender=null;
+
+    DecodeThread(AudioHw _audioHw, SW_Receiver _receiver, SW_Sender _sender, int _src) throws IOException {
         running = true;
         audioHw = _audioHw;
         receiver = _receiver;
@@ -34,10 +33,13 @@ public class DecodeThread extends Thread {
         // init the carrier
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_SAMPLING_RATE);
         carrier = wave.sample(Config.PHY_SAMPLING_RATE);
+
+        // init the icmp sender
+        icmp_sender = new ICMP_Sender();
     }
 
     public static void sendACK(int dest, int src, int type, int id){
-        float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true, 0, 0, 0, 0, 0);
+        float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true, 0, 0, 0, 0, 0, 0);
         audioHw.PHYSend(track, false);
         if (type == Config.TYPE_ACK){
 //            System.out.println("Send ACK: " + id);
@@ -243,9 +245,14 @@ public class DecodeThread extends Thread {
                     System.out.println("validDataLen: " + validDataLen);
 
                     headSum += Config.VALID_DATA_SIZE;
+                    // get ICMP echo start time
+                    int icmp_time = 0;
+                    for (int i = 0; i < Config.ICMP_TIME_SIZE; i++) {
+                        icmp_time += decoded_block_data.get(headSum + i) << i;
+                    }
+                    System.out.println("icmp_time: " + icmp_time);
 
-
-                    if (type == Config.TYPE_DATA){
+                    if (type == Config.TYPE_DATA ){
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
                         // write data
                         receiver.storeFrame(decoded_block_data.subList(headSum, validDataLen + headSum), id);
@@ -304,6 +311,43 @@ public class DecodeThread extends Thread {
                     else if (type == Config.TYPE_SEND_REPLY){
                         System.out.println("Reply received. Sending...");
                         audioHw.state = Config.STATE_FRAME_TX;
+                    } else if (type == Config.TYPE_ICMP_ECHO) {
+                        // transmit the message from node1 to node3: send an ICMP echo packet to node3
+                        StringBuilder output = new StringBuilder();
+                        for (int datum: decoded_block_data.subList(UDPStart, headSum+validDataLen)){
+                            output.append(datum);
+                        }
+                        byte[] bytes = new byte[output.length() / 8];
+                        for (int i = 0; i < output.length() / 8; i++) {
+                            // System.out.print(bitStr+"|");
+                            bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
+                        }
+
+                        try {
+                            icmp_sender.send(Config.node1_IP, Config.node3_IP, bytes, 1);
+                        } catch (UnknownHostException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    else if (type == Config.TYPE_ICMP_ECHO_REPLY) {
+                        // output IP, payload and latency of the received ICMP packets
+                        StringBuilder output = new StringBuilder();
+                        for (int datum: decoded_block_data.subList(UDPStart, headSum+validDataLen)){
+                            output.append(datum);
+                        }
+                        byte[] bytes = new byte[output.length() / 8];
+                        for (int i = 0; i < output.length() / 8; i++) {
+                            // System.out.print(bitStr+"|");
+                            bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
+                        }
+
+                        int current_time = (int)(System.currentTimeMillis() % Math.pow(2.0f, Config.ICMP_TIME_SIZE));
+                        if(current_time<icmp_time){
+                            current_time += (int)Math.pow(2.0f, Config.ICMP_TIME_SIZE);
+                        }
+                        System.out.println("IP:"+srcIP);
+                        System.out.println("Payload:"+ Arrays.toString(bytes));
+                        System.out.println("Latency:"+(current_time-icmp_time));
                     }
                 }
 

@@ -24,6 +24,10 @@ public class Config {
 	public final static int TYPE_PING_REPLY = 4;
 	public final static int TYPE_SEND_REQ = 5;
 	public final static int TYPE_SEND_REPLY = 6;
+	public final static int TYPE_ICMP_ECHO = 7;
+	public final static int TYPE_ICMP_ECHO_REPLY = 8;
+
+	public final static String DEFAULT_PAYLOAD = "qwertyuiopasdfghjklzxcvbnm";
 
 	public final static int STATE_FRAME_DETECTION = 0;
 	public final static int STATE_FRAME_TX = 1;
@@ -53,6 +57,7 @@ public class Config {
 	public final static int DEST_PORT_SIZE = 16;
 	public final static int SRC_PORT_SIZE = 16;
 	public final static int VALID_DATA_SIZE = 16;
+	public final static int ICMP_TIME_SIZE = 12;
 	public final static int PAYLOAD_SIZE = 512;
 	public final static int CRC_SIZE = 32;
 	public final static int ACK_SIZE = DEST_SIZE + SRC_SIZE + TYPE_SIZE + SEQ_SIZE;

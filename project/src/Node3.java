@@ -112,6 +112,7 @@ public class Node3 {
 
     }
     public static void main(String[] args) throws IOException {
-        node3_send();
+//        node3_send();
+        node3_receive();
     }
 }

@@ -44,7 +44,7 @@ public class SW_Sender {
             }
             ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(lineData)).boxed().collect(Collectors.toList());
             track_list.add(frameToTrack(data, _dest, _src, type, frame_num++, false,
-                    Util.ipToLong(destIP), Util.ipToLong(srcIP), destPort, srcPort, data.size()));
+                    Util.ipToLong(destIP), Util.ipToLong(srcIP), destPort, srcPort, data.size(), 0));
         }
 
         // init the audio driver
@@ -173,7 +173,7 @@ public class SW_Sender {
 
 
     static float[] frameToTrack(List<Integer> frame_data, int dest, int src, int type, int idx, boolean isASK,
-                                long destIP, long srcIP, int destPort, int srcPort, int validDataLen){
+                                long destIP, long srcIP, int destPort, int srcPort, int validDataLen, int current_time){
         // initialization
         List<Integer> frame;
         int zero_buffer_len;
@@ -242,6 +242,11 @@ public class SW_Sender {
 
             for(int n = 0; n < Config.VALID_DATA_SIZE; n++){
                 bit = (validDataLen & (1 << n)) >> n;
+                frame.add(bit);
+            }
+            int time = (int)(current_time % Math.pow(2.0f, Config.ICMP_TIME_SIZE));
+            for(int n = 0; n < Config.ICMP_TIME_SIZE; n++){
+                bit = (time & (1 << n)) >> n;
                 frame.add(bit);
             }
         }
