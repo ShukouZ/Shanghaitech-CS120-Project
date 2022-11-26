@@ -96,25 +96,14 @@ public class AudioHw implements AsioDriverListener {
 		asioDriver.shutdownAndUnloadDriver();  // tear everything down
 	}
 
-	public boolean PHYSend(float[] track, boolean waitChannelFree){
-		int start_time = (int)System.currentTimeMillis();
-		int wait_cnt = 0;
-		while (playList != null && playLoc < playList.length || (state != Config.STATE_FRAME_TX && waitChannelFree)){
-			if ((int)System.currentTimeMillis() - start_time > 200 && waitChannelFree && state != Config.STATE_FRAME_RX){
-				start_time = (int)System.currentTimeMillis();
-				wait_cnt ++;
-				if (wait_cnt > Config.MAC_RETRY_LIMIT){
-					return false;
-				}
-				playLoc = 0;
-				System.out.println("Retry...");
-			}
+	public boolean PHYSend(float[] track){
+		while (playList != null && playLoc < playList.length){
+			System.currentTimeMillis();
 			Thread.yield();
 		}
 
 		playList = track;
 		playLoc = 0;
-		start_time = (int)System.currentTimeMillis();
 		return true;
 	}
 

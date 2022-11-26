@@ -1,3 +1,8 @@
+import jpcap.JpcapCaptor;
+import jpcap.NetworkInterface;
+import jpcap.packet.ICMPPacket;
+import jpcap.packet.IPPacket;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -5,9 +10,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Node2 {
@@ -69,16 +72,73 @@ public class Node2 {
                     Util.ipToLong(Config.node3_IP),
                     Config.node1_Port,
                     Config.node3_Port,
-                    decoded_data.size(),
-                    0);
+                    decoded_data.size()
+            );
 //            track_list.add(track);
             ////////////////////////
-            audioHw.PHYSend(track, false);
+            audioHw.PHYSend(track);
             ///////////////////////
             System.out.println("输入数据为：\n"+s);
             System.out.println("--------------------------------------------------------------------------");
         }
         ds.close();
+        audioHw.stop();
+    }
+
+    public static void node2_ICMP() throws IOException{
+        AudioHw audioHw = new AudioHw();
+        audioHw.init();
+        audioHw.start();
+
+        DecodeThread decodeThread  = new DecodeThread(audioHw, null, null, Config.NODE_2_CODE);
+        decodeThread.start();
+
+        NetworkInterface[] devices = JpcapCaptor.getDeviceList();
+        int index = 5;
+
+        JpcapCaptor jpcap = null;
+
+        // 打开网卡连接,此时还未开始捕获数据包;
+        try {
+            jpcap = JpcapCaptor.openDevice(devices[index], 1512, true,6000);
+            jpcap.setFilter("proto ICMP", true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("抓取数据包时出现异常!!");
+        }
+
+        long start_time = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - start_time < 30000) {
+            assert jpcap != null;
+            try {
+                ICMPPacket packet = (ICMPPacket) jpcap.getPacket();
+                if (packet!=null)
+                {
+//                    System.out.println(packet);
+                    if (packet.type == ICMPPacket.ICMP_ECHOREPLY){
+                        // TODO: send reply to node1
+                        ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(packet.data)).boxed().collect(Collectors.toList());
+                        long src_ip = Util.ipToLong(packet.src_ip.getHostAddress());
+                        long dst_ip = Util.ipToLong(Config.node1_IP);
+
+                        float[] track = SW_Sender.frameToTrack(data, Config.NODE_1_CODE, Config.NODE_2_CODE, Config.TYPE_ICMP_ECHO_REPLY, packet.id, false,
+                                dst_ip, src_ip, 0, 0, data.size());
+                        audioHw.PHYSend(track);
+
+
+
+                    }
+                }
+
+
+            }catch (Exception e){
+
+            }
+        }
+
+
+        decodeThread.stopDecoding();
         audioHw.stop();
     }
 

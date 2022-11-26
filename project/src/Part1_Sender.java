@@ -19,7 +19,7 @@ public class Part1_Sender {
         for (int i = 0; i < 10; i++){
             byte[] bys=new byte[20];
             rd.nextBytes(bys);
-            DatagramPacket dp=new DatagramPacket(bys,bys.length, InetAddress.getByName("10.20.170.250"),12345);//建立数据包，声明长度，接收端主机，端口号
+            DatagramPacket dp=new DatagramPacket(bys,bys.length, InetAddress.getByName("10.19.74.124"),12345);//建立数据包，声明长度，接收端主机，端口号
             ds.send(dp);//发送数据
 
             System.out.println("Send: ");
@@ -35,7 +35,7 @@ public class Part1_Sender {
 //            if("886".equals(line))
 //                break;
 //            byte[] bys=line.getBytes();
-//            DatagramPacket dp=new DatagramPacket(bys,bys.length, InetAddress.getByName("10.20.170.250"),12345);//建立数据包，声明长度，接收端主机，端口号
+//            DatagramPacket dp=new DatagramPacket(bys,bys.length, InetAddress.getByName("10.19.74.124"),12345);//建立数据包，声明长度，接收端主机，端口号
 //            ds.send(dp);//发送数据
 //        }
 

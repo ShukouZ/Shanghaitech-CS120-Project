@@ -44,7 +44,7 @@ public class SW_Sender {
             }
             ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(lineData)).boxed().collect(Collectors.toList());
             track_list.add(frameToTrack(data, _dest, _src, type, frame_num++, false,
-                    Util.ipToLong(destIP), Util.ipToLong(srcIP), destPort, srcPort, data.size(), 0));
+                    Util.ipToLong(destIP), Util.ipToLong(srcIP), destPort, srcPort, data.size()));
         }
 
         // init the audio driver
@@ -105,7 +105,7 @@ public class SW_Sender {
                     DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
                 }
 
-                if (!audioHw.PHYSend(track_list.get(current_frame), waitChannelFree)){
+                if (!audioHw.PHYSend(track_list.get(current_frame))){
                     System.out.println("Send require no reply.");
                     System.out.println("Stop sending.");
                     return;
@@ -141,7 +141,7 @@ public class SW_Sender {
                         if(waitChannelFree) {
                             DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
                         }
-                        audioHw.PHYSend(track_list.get(current_frame), waitChannelFree);
+                        audioHw.PHYSend(track_list.get(current_frame));
                         sentList[current_frame]++;
                         try{
                             Thread.sleep(millisPerFrame);
@@ -173,7 +173,7 @@ public class SW_Sender {
 
 
     static float[] frameToTrack(List<Integer> frame_data, int dest, int src, int type, int idx, boolean isASK,
-                                long destIP, long srcIP, int destPort, int srcPort, int validDataLen, int current_time){
+                                long destIP, long srcIP, int destPort, int srcPort, int validDataLen){
         // initialization
         List<Integer> frame;
         int zero_buffer_len;
@@ -242,11 +242,6 @@ public class SW_Sender {
 
             for(int n = 0; n < Config.VALID_DATA_SIZE; n++){
                 bit = (validDataLen & (1 << n)) >> n;
-                frame.add(bit);
-            }
-            int time = (int)(current_time % Math.pow(2.0f, Config.ICMP_TIME_SIZE));
-            for(int n = 0; n < Config.ICMP_TIME_SIZE; n++){
-                bit = (time & (1 << n)) >> n;
                 frame.add(bit);
             }
         }

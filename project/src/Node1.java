@@ -62,12 +62,21 @@ public class Node1 {
         DecodeThread decodeThread  = new DecodeThread(audioHw, null, null, Config.NODE_1_CODE);
         decodeThread.start();
 
-        byte[] payload = Config.DEFAULT_PAYLOAD.getBytes();
+        long time_stamp = System.currentTimeMillis();
+
+        byte[] bytes = "abcdefg".getBytes();
+
+        byte[] payload = new byte[2 + bytes.length];
+        payload[0] = (byte)(time_stamp & 0xFF);
+        payload[1] = (byte)((time_stamp & 0xFF00) >> 8);
+
+        System.arraycopy(payload, 0, payload, 2, bytes.length);
+
         ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(payload)).boxed().collect(Collectors.toList());
         float[] track = SW_Sender.frameToTrack(data, Config.NODE_2_CODE, Config.NODE_1_CODE, Config.TYPE_ICMP_ECHO, 0, false,
-                Util.ipToLong(Config.node3_IP), Util.ipToLong(Config.node1_IP), 1, 0, data.size(), (int)System.currentTimeMillis());
+                Util.ipToLong(Config.node3_IP), Util.ipToLong(Config.node1_IP), 1, 0, data.size());
 
-        audioHw.PHYSend(track, false);
+        audioHw.PHYSend(track);
         decodeThread.stopDecoding();
         audioHw.stop();
     }

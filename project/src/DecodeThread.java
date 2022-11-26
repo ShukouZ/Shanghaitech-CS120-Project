@@ -39,8 +39,8 @@ public class DecodeThread extends Thread {
     }
 
     public static void sendACK(int dest, int src, int type, int id){
-        float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true, 0, 0, 0, 0, 0, 0);
-        audioHw.PHYSend(track, false);
+        float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true, 0, 0, 0, 0, 0);
+        audioHw.PHYSend(track);
         if (type == Config.TYPE_ACK){
 //            System.out.println("Send ACK: " + id);
         } else if (type == Config.TYPE_SEND_REQ) {
@@ -245,12 +245,6 @@ public class DecodeThread extends Thread {
                     System.out.println("validDataLen: " + validDataLen);
 
                     headSum += Config.VALID_DATA_SIZE;
-                    // get ICMP echo start time
-                    int icmp_time = 0;
-                    for (int i = 0; i < Config.ICMP_TIME_SIZE; i++) {
-                        icmp_time += decoded_block_data.get(headSum + i) << i;
-                    }
-                    System.out.println("icmp_time: " + icmp_time);
 
                     if (type == Config.TYPE_DATA ){
                         System.out.println("Data block " + frame_decoded_num + " received data: " + id);
@@ -295,12 +289,6 @@ public class DecodeThread extends Thread {
                         sendACK(src, node_id, Config.TYPE_PING_REPLY, id);
                     }
                     else if (type == Config.TYPE_PING_REPLY){
-//                        int end_time = (int)System.currentTimeMillis() % 256;
-//                        System.out.println("End: " + end_time);
-//                        end_time = end_time > id ?
-//                                end_time :
-//                                end_time + 256;
-//                        int duration = end_time - id;
                         receivedPing = true;
                         System.out.println("Ping: "+((int)System.currentTimeMillis() - audioHw.end_time)+" ms.");
                     }
@@ -341,12 +329,16 @@ public class DecodeThread extends Thread {
                             bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
                         }
 
-                        int current_time = (int)(System.currentTimeMillis() % Math.pow(2.0f, Config.ICMP_TIME_SIZE));
+                        int current_time = (int)(System.currentTimeMillis() & 0xFFFF);
+
+                        int icmp_time = (bytes[0] >= 0 ? (int)bytes[0] : 256 + (int)bytes[0]) + ((bytes[1] >= 0 ? (int)bytes[1] : 256 + (int)bytes[1]) << 8);
+
+
                         if(current_time<icmp_time){
-                            current_time += (int)Math.pow(2.0f, Config.ICMP_TIME_SIZE);
+                            current_time += (int)Math.pow(2.0f, 16);
                         }
                         System.out.println("IP:"+srcIP);
-                        System.out.println("Payload:"+ Arrays.toString(bytes));
+                        System.out.println("Payload:"+ new String(bytes, 2, bytes.length - 2));
                         System.out.println("Latency:"+(current_time-icmp_time));
                     }
                 }

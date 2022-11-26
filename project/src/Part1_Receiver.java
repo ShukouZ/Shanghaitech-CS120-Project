@@ -4,7 +4,7 @@ import java.net.DatagramSocket;
 
 public class Part1_Receiver {
     public static void main(String[] args) throws IOException {
-        DatagramSocket ds=new DatagramSocket(1234); //接收端口号的消息
+        DatagramSocket ds=new DatagramSocket(12345); //接收端口号的消息
         while(true){
             byte[] bys=new byte[1024];
             DatagramPacket dp=new DatagramPacket(bys,bys.length);//建立信息包

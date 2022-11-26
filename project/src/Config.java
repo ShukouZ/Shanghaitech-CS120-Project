@@ -57,7 +57,6 @@ public class Config {
 	public final static int DEST_PORT_SIZE = 16;
 	public final static int SRC_PORT_SIZE = 16;
 	public final static int VALID_DATA_SIZE = 16;
-	public final static int ICMP_TIME_SIZE = 12;
 	public final static int PAYLOAD_SIZE = 512;
 	public final static int CRC_SIZE = 32;
 	public final static int ACK_SIZE = DEST_SIZE + SRC_SIZE + TYPE_SIZE + SEQ_SIZE;
