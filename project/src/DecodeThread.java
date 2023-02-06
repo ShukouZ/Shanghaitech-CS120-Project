@@ -19,8 +19,6 @@ public class DecodeThread extends Thread {
 
     public boolean receivedPing;
 
-    private ICMP_Sender icmp_sender=null;
-
     DecodeThread(AudioHw _audioHw, SW_Receiver _receiver, SW_Sender _sender, int _src) throws IOException {
         running = true;
         audioHw = _audioHw;
@@ -34,8 +32,6 @@ public class DecodeThread extends Thread {
         SinWave wave = new SinWave(0, Config.PHY_CARRIER_FREQ, Config.PHY_SAMPLING_RATE);
         carrier = wave.sample(Config.PHY_SAMPLING_RATE);
 
-        // init the icmp sender
-        icmp_sender = new ICMP_Sender();
     }
 
     public static void sendACK(int dest, int src, int type, int id){
@@ -311,11 +307,6 @@ public class DecodeThread extends Thread {
                             bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
                         }
 
-                        try {
-                            icmp_sender.send(Config.node1_IP, Config.node3_IP, bytes, 1);
-                        } catch (UnknownHostException e) {
-                            throw new RuntimeException(e);
-                        }
                     }
                     else if (type == Config.TYPE_ICMP_ECHO_REPLY) {
                         // output IP, payload and latency of the received ICMP packets

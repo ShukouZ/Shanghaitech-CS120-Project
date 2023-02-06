@@ -109,6 +109,6 @@ public class Node1 {
     }
 
     public static void main(final String[] args) throws IOException {
-        node1_receive();
+        node1_send();
     }
 }
