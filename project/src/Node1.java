@@ -34,6 +34,7 @@ public class Node1 {
                 type = Config.TYPE_COMMAND_RETR;
             }else {
 //                ERROR FIX;
+                continue;
             }
 
             // send commands
