@@ -31,14 +31,16 @@ public class SW_Sender {
     private final boolean waitChannelFree;
 
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type, boolean _waitChannelFree,
-              String destIP, String srcIP, int destPort, int srcPort, String content){
+              String destIP, String srcIP, int destPort, int srcPort, List<String> contents){
         // get list of variable-size frames
         ArrayList<byte[]> file_data;
         if(type < Config.TYPE_COMMAND_USER) {
             file_data = Util.readTxtByBytes(filePath);
         }else{
             file_data = new ArrayList<>();
-            file_data.add(content.getBytes());
+            for(String c: contents) {
+                file_data.add(c.getBytes());
+            }
         }
         // generate soundtrack for each frame
         frame_num = 0;
@@ -93,14 +95,8 @@ public class SW_Sender {
 
                 current_frame = LAR + 1;
 
-//                while (!audioHw.isIdle()){
-//                    System.out.print("\rNoisy");
-//                    Thread.yield();
-//                }
-//                System.out.println();
-
                 // sending
-                System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));
+//                System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));
 
                 if (!audioHw.PHYSend(track_list.get(current_frame))){
                     System.out.println("Send require no reply.");

@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.net.ftp.FTPClient;
@@ -328,12 +329,7 @@ public class DecodeThread extends Thread {
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
-
-                            String str = "";
-                            for (String s: list){
-                                str += s + "\n";
-                            }
-                            sendString(str, src, Config.TYPE_COMMAND_REPLY);
+                            sendStringList(list, src, Config.TYPE_COMMAND_REPLY);
                         } else if (type == Config.TYPE_COMMAND_RETR) {
 
                         } else if (type == Config.TYPE_COMMAND_REPLY) {
@@ -369,7 +365,27 @@ public class DecodeThread extends Thread {
                 Config.node1_IP,
                 Config.node3_Port,
                 Config.node1_Port,
-                str);
+                Collections.singletonList(str));
+
+        sender.sendFrame();
+    }
+
+    private void sendStringList(String[] str, int dest, int type){
+        // send commands
+        sender = new SW_Sender("",
+                10,
+                audioHw,
+                50,
+                300,
+                dest,
+                node_id,
+                type,
+                false,
+                Config.node3_IP,
+                Config.node1_IP,
+                Config.node3_Port,
+                Config.node1_Port,
+                Arrays.asList(str));
 
         sender.sendFrame();
     }

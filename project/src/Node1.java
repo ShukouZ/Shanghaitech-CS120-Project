@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -70,7 +71,7 @@ public class Node1 {
                     Config.node1_IP,
                     Config.node3_Port,
                     Config.node1_Port,
-                    content);
+                    Collections.singletonList(content));
             decodeThread.updateSender((sender));
             sender.sendFrame();
             // next round
