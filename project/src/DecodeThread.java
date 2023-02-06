@@ -207,14 +207,14 @@ public class DecodeThread extends Thread {
                     for (int i = 0; i < Config.DEST_IP_SIZE; i++) {
                         destIP += (long) decoded_block_data.get(headSum + i) << i;
                     }
-                    System.out.println("destIP: " + Util.longToIP(destIP));
+//                    System.out.println("destIP: " + Util.longToIP(destIP));
                     headSum += Config.DEST_IP_SIZE;
                     // get srcIP
                     long srcIP = 0;
                     for (int i = 0; i < Config.SRC_IP_SIZE; i++) {
                         srcIP += (long) decoded_block_data.get(headSum + i) << i;
                     }
-                    System.out.println("srcIP: " +  Util.longToIP(srcIP));
+//                    System.out.println("srcIP: " +  Util.longToIP(srcIP));
 
                     headSum += Config.SRC_IP_SIZE;
                     // get destPort
@@ -222,7 +222,7 @@ public class DecodeThread extends Thread {
                     for (int i = 0; i < Config.DEST_PORT_SIZE; i++) {
                         destPort += decoded_block_data.get(headSum + i) << i;
                     }
-                    System.out.println("destPort: " + destPort);
+//                    System.out.println("destPort: " + destPort);
 
                     headSum += Config.DEST_PORT_SIZE;
                     // get srcPort
@@ -230,7 +230,7 @@ public class DecodeThread extends Thread {
                     for (int i = 0; i < Config.SRC_PORT_SIZE; i++) {
                         srcPort += decoded_block_data.get(headSum + i) << i;
                     }
-                    System.out.println("srcPort: " + srcPort);
+//                    System.out.println("srcPort: " + srcPort);
 
                     headSum += Config.SRC_PORT_SIZE;
                     // get validDataLen
@@ -238,7 +238,7 @@ public class DecodeThread extends Thread {
                     for (int i = 0; i < Config.VALID_DATA_SIZE; i++) {
                         validDataLen += decoded_block_data.get(headSum + i) << i;
                     }
-                    System.out.println("validDataLen: " + validDataLen);
+//                    System.out.println("validDataLen: " + validDataLen);
 
                     headSum += Config.VALID_DATA_SIZE;
 
@@ -351,7 +351,7 @@ public class DecodeThread extends Thread {
                         System.out.println("--------------------------------------------------------------");
                         System.out.println();
 
-
+                        sendACK(src, node_id, Config.TYPE_ACK, 1);
                     }
                 }
 
