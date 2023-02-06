@@ -19,20 +19,14 @@ public class Config {
 	// type value
 	public final static int TYPE_DATA = 0;
 	public final static int TYPE_ACK = 1;
-	public final static int TYPE_PERF = 2;
-	public final static int TYPE_PING_REQ = 3;
-	public final static int TYPE_PING_REPLY = 4;
-	public final static int TYPE_SEND_REQ = 5;
-	public final static int TYPE_SEND_REPLY = 6;
-	public final static int TYPE_ICMP_ECHO = 7;
-	public final static int TYPE_ICMP_ECHO_REPLY = 8;
-	public final static int TYPE_COMMAND_USER = 9;
-	public final static int TYPE_COMMAND_PASS = 10;
-	public final static int TYPE_COMMAND_PWD = 11;
-	public final static int TYPE_COMMAND_CWD = 12;
-	public final static int TYPE_COMMAND_PASV = 13;
-	public final static int TYPE_COMMAND_LIST = 14;
-	public final static int TYPE_COMMAND_RETR = 15;
+	public final static int TYPE_COMMAND_USER = 2;
+	public final static int TYPE_COMMAND_PASS = 3;
+	public final static int TYPE_COMMAND_PWD = 4;
+	public final static int TYPE_COMMAND_CWD = 5;
+	public final static int TYPE_COMMAND_PASV = 6;
+	public final static int TYPE_COMMAND_LIST = 7;
+	public final static int TYPE_COMMAND_RETR = 8;
+	public final static int TYPE_COMMAND_REPLY = 9;
 
 
 	public final static int STATE_FRAME_DETECTION = 0;
