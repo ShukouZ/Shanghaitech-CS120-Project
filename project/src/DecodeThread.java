@@ -371,6 +371,8 @@ public class DecodeThread extends Thread {
     }
 
     private void sendStringList(String[] str, int dest, int type){
+        List<String> strList = Arrays.asList(str);
+        strList.add("\n");
         // send commands
         sender = new SW_Sender("",
                 10,
@@ -385,7 +387,7 @@ public class DecodeThread extends Thread {
                 Config.node1_IP,
                 Config.node3_Port,
                 Config.node1_Port,
-                Arrays.asList(str));
+                strList);
 
         sender.sendFrame();
     }
