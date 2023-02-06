@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+
 public class DecodeThread extends Thread {
     private boolean running;
     private static AudioHw audioHw;
@@ -13,16 +16,19 @@ public class DecodeThread extends Thread {
     private final ArrayList<Integer> decoded_data_foreach = new ArrayList<>();
 
     private final SW_Receiver receiver;
-    private final SW_Sender sender;
+    private SW_Sender sender;
+
+    private final FTPClient ftpClient;
     private final int node_id;
 
     public boolean receivedPing;
 
-    DecodeThread(AudioHw _audioHw, SW_Receiver _receiver, SW_Sender _sender, int _src) throws IOException {
+    DecodeThread(AudioHw _audioHw, SW_Receiver _receiver, SW_Sender _sender, FTPClient _ftpClient, int _src) throws IOException {
         running = true;
         audioHw = _audioHw;
         receiver = _receiver;
         sender = _sender;
+        ftpClient = _ftpClient;
         node_id = _src;
         receivedPing = false;
 
@@ -258,10 +264,9 @@ public class DecodeThread extends Thread {
                             throw new RuntimeException(e);
                         }
 
-                    }
-                    else {
-                        System.out.println(type);
-                        System.out.println();
+                    } else{
+//                        System.out.println(type);
+//                        System.out.println();
 
                         // transfer data(int) to data(bytes)
                         StringBuilder output = new StringBuilder();
@@ -274,11 +279,64 @@ public class DecodeThread extends Thread {
                             bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
                         }
 
-                        System.out.println(new String(bytes, 14, bytes.length - 14));
-                        System.out.println("--------------------------------------------------------------");
-                        System.out.println();
+                        String content = new String(bytes, 14, bytes.length - 14);
 
                         sendACK(src, node_id, Config.TYPE_ACK, 1);
+
+                        if (type == Config.TYPE_COMMAND_USER) {
+                            try {
+                                ftpClient.user(content);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            sendString(ftpClient.getReplyString(), src, Config.TYPE_COMMAND_REPLY);
+                        } else if (type == Config.TYPE_COMMAND_PASS) {
+                            try {
+                                ftpClient.pass(content);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            sendString(ftpClient.getReplyString(), src, Config.TYPE_COMMAND_REPLY);
+                        } else if (type == Config.TYPE_COMMAND_PWD) {
+                            try {
+                                ftpClient.pwd();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            sendString(ftpClient.getReplyString(), src, Config.TYPE_COMMAND_REPLY);
+                        } else if (type == Config.TYPE_COMMAND_CWD) {
+                            try {
+                                ftpClient.cwd(content);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            sendString(ftpClient.getReplyString(), src, Config.TYPE_COMMAND_REPLY);
+                        } else if (type == Config.TYPE_COMMAND_PASV) {
+                            try {
+                                ftpClient.pasv();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            sendString(ftpClient.getReplyString(), src, Config.TYPE_COMMAND_REPLY);
+                        } else if (type == Config.TYPE_COMMAND_LIST) {
+                            String[] list;
+                            try {
+                                list = ftpClient.listNames();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            String str = "";
+                            for (String s: list){
+                                str += s + "\n";
+                            }
+                            sendString(str, src, Config.TYPE_COMMAND_REPLY);
+                        } else if (type == Config.TYPE_COMMAND_RETR) {
+
+                        } else if (type == Config.TYPE_COMMAND_REPLY) {
+                            System.out.println(content);
+                        }
+
                     }
                 }
 
@@ -291,5 +349,25 @@ public class DecodeThread extends Thread {
 
     public void stopDecoding(){
         running = false;
+    }
+
+    private void sendString(String str, int dest, int type){
+        // send commands
+        sender = new SW_Sender("",
+                10,
+                audioHw,
+                50,
+                300,
+                dest,
+                node_id,
+                type,
+                false,
+                Config.node3_IP,
+                Config.node1_IP,
+                Config.node3_Port,
+                Config.node1_Port,
+                str);
+
+        sender.sendFrame();
     }
 }

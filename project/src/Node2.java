@@ -1,3 +1,5 @@
+import org.apache.commons.net.ftp.FTPClient;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,12 +16,12 @@ public class Node2 {
         audioHw.init();
         audioHw.start();
 
-        SW_Receiver receiver = new SW_Receiver(audioHw);
-//        for (int i = 0; i < 100; i++) {
-//            receiver.sendACK(i);
-//        }
+        //创建一个ftp客户端
+        FTPClient ftpClient = new FTPClient();
+        // 连接FTP服务器
+        ftpClient.connect("ftp.ncnu.edu.tw");
 
-        DecodeThread decodeThread  = new DecodeThread(audioHw, receiver, null, Config.NODE_2_CODE);
+        DecodeThread decodeThread  = new DecodeThread(audioHw, null, null, ftpClient, Config.NODE_2_CODE);
         decodeThread.start();
         try {
             Thread.sleep(20000);  // ms

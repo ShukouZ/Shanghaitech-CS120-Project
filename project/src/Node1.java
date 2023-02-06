@@ -64,7 +64,7 @@ public class Node1 {
                     Config.node3_Port,
                     Config.node1_Port,
                     content);
-            DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
+            DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, null, Config.NODE_1_CODE);
             decodeThread.start();
             sender.sendFrame();
             decodeThread.stopDecoding();
