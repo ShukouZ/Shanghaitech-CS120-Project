@@ -28,8 +28,6 @@ public class SW_Sender {
     private int dest;
     private int src;
 
-    private final boolean isPerf;
-
     private final boolean waitChannelFree;
 
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type, boolean _waitChannelFree,
@@ -70,8 +68,6 @@ public class SW_Sender {
         dest = _dest;
         src = _src;
 
-        // Perf test
-        isPerf = (type == Config.TYPE_PERF);
 
         waitChannelFree = _waitChannelFree;
     }
@@ -105,9 +101,6 @@ public class SW_Sender {
 
                 // sending
                 System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame));
-                if(waitChannelFree) {
-                    DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
-                }
 
                 if (!audioHw.PHYSend(track_list.get(current_frame))){
                     System.out.println("Send require no reply.");
@@ -142,18 +135,12 @@ public class SW_Sender {
                     }
                     if(current_frame>LAR) {
                         System.out.println("SW_SENDER:\tCurrent Frame: "+(current_frame)+" with LAR: "+ LAR);
-                        if(waitChannelFree) {
-                            DecodeThread.sendACK(dest, src, Config.TYPE_SEND_REQ, 255);
-                        }
                         audioHw.PHYSend(track_list.get(current_frame));
                         sentList[current_frame]++;
                         try{
                             Thread.sleep(millisPerFrame);
                         }catch (Exception e){
                             e.printStackTrace();
-                        }
-                        if(isPerf){
-                            LAR ++;
                         }
                     }
                     current_frame ++;

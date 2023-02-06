@@ -15,7 +15,6 @@ public class DecodeThread extends Thread {
     private final SW_Receiver receiver;
     private final SW_Sender sender;
     private final int node_id;
-    private int perf_id;
 
     public boolean receivedPing;
 
@@ -25,7 +24,6 @@ public class DecodeThread extends Thread {
         receiver = _receiver;
         sender = _sender;
         node_id = _src;
-        perf_id = 0;
         receivedPing = false;
 
         // init the carrier
@@ -37,20 +35,7 @@ public class DecodeThread extends Thread {
     public static void sendACK(int dest, int src, int type, int id){
         float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true, 0, 0, 0, 0, 0);
         audioHw.PHYSend(track);
-        if (type == Config.TYPE_ACK){
-//            System.out.println("Send ACK: " + id);
-        } else if (type == Config.TYPE_SEND_REQ) {
-//            System.out.println("Send require...");
-        }else if (type == Config.TYPE_SEND_REPLY) {
-//            System.out.println("Reply send require...");
-        }else if (type == Config.TYPE_PING_REQ) {
-//            System.out.println("Ping require...");
-        }else if (type == Config.TYPE_PING_REPLY) {
-//            System.out.println("Reply ping require...");
-        }
     }
-
-
 
 
     private ArrayList<Integer> decodeFrame(ArrayList<Float> data_signal, int offset){
@@ -273,64 +258,6 @@ public class DecodeThread extends Thread {
                             throw new RuntimeException(e);
                         }
 
-                    }
-                    else if (type == Config.TYPE_PERF){
-//                        System.out.println("Data block " + frame_decoded_num + " received perf: " + id);
-                        if (id == perf_id){
-                            perf_id++;
-                        }
-                        sendACK(src, node_id, Config.TYPE_ACK, perf_id);
-                        audioHw.state = Config.STATE_FRAME_DETECTION;
-                    }else if (type == Config.TYPE_PING_REQ){
-                        sendACK(src, node_id, Config.TYPE_PING_REPLY, id);
-                    }
-                    else if (type == Config.TYPE_PING_REPLY){
-                        receivedPing = true;
-                        System.out.println("Ping: "+((int)System.currentTimeMillis() - audioHw.end_time)+" ms.");
-                    }
-                    else if (type == Config.TYPE_SEND_REQ){
-                        sendACK(src, node_id, Config.TYPE_SEND_REPLY, id);
-                        audioHw.state = Config.STATE_FRAME_RX;
-                    }
-                    else if (type == Config.TYPE_SEND_REPLY){
-                        System.out.println("Reply received. Sending...");
-                        audioHw.state = Config.STATE_FRAME_TX;
-                    } else if (type == Config.TYPE_ICMP_ECHO) {
-                        // transmit the message from node1 to node3: send an ICMP echo packet to node3
-                        StringBuilder output = new StringBuilder();
-                        for (int datum: decoded_block_data.subList(UDPStart, headSum+validDataLen)){
-                            output.append(datum);
-                        }
-                        byte[] bytes = new byte[output.length() / 8];
-                        for (int i = 0; i < output.length() / 8; i++) {
-                            // System.out.print(bitStr+"|");
-                            bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
-                        }
-
-                    }
-                    else if (type == Config.TYPE_ICMP_ECHO_REPLY) {
-                        // output IP, payload and latency of the received ICMP packets
-                        StringBuilder output = new StringBuilder();
-                        for (int datum: decoded_block_data.subList(UDPStart, headSum+validDataLen)){
-                            output.append(datum);
-                        }
-                        byte[] bytes = new byte[output.length() / 8];
-                        for (int i = 0; i < output.length() / 8; i++) {
-                            // System.out.print(bitStr+"|");
-                            bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
-                        }
-
-                        int current_time = (int)(System.currentTimeMillis() & 0xFFFF);
-
-                        int icmp_time = (bytes[0] >= 0 ? (int)bytes[0] : 256 + (int)bytes[0]) + ((bytes[1] >= 0 ? (int)bytes[1] : 256 + (int)bytes[1]) << 8);
-
-
-                        if(current_time<icmp_time){
-                            current_time += (int)Math.pow(2.0f, 16);
-                        }
-                        System.out.println("IP:"+srcIP);
-                        System.out.println("Payload:"+ new String(bytes, 2, bytes.length - 2));
-                        System.out.println("Latency:"+(current_time-icmp_time));
                     }
                     else {
                         System.out.println(type);
