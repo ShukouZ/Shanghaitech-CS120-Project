@@ -11,11 +11,13 @@ public class Node1 {
         audioHw.init();
         audioHw.start();
 
+        SW_Receiver receiver = new SW_Receiver(audioHw);
+
         Scanner in = new Scanner(System.in);
         String s = in.nextLine().strip();
         int type=-1;
         String command, content;
-        DecodeThread decodeThread = new DecodeThread(audioHw, null, null, null, Config.NODE_1_CODE);
+        DecodeThread decodeThread = new DecodeThread(audioHw, receiver, null, null, Config.NODE_1_CODE);
         decodeThread.start();
 
         while (!s.toLowerCase().equals("bye")) {
@@ -58,7 +60,7 @@ public class Node1 {
             }
 
             // send commands
-            SW_Sender sender = new SW_Sender("",
+            SW_Sender sender = new SW_Sender(null,
                     10,
                     audioHw,
                     50,
@@ -80,7 +82,6 @@ public class Node1 {
         decodeThread.stopDecoding();
         audioHw.stop();
     }
-
 
     public static void main(final String[] args) throws IOException {
         node1_send();

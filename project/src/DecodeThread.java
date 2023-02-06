@@ -1,4 +1,6 @@
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -259,14 +261,6 @@ public class DecodeThread extends Thread {
                         System.out.println("--------------------------------------------------------------");
                         System.out.println();
 
-                        // UDP send packet
-                        try {
-//                            System.out.println(Arrays.toString(bytes));
-                            DatagramPacket dp=new DatagramPacket(bytes,bytes.length, InetAddress.getByName(Util.longToIP(destIP)), destPort);//建立数据包，声明长度，接收端主机，端口号
-                            ds.send(dp);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
 
                     } else{
 //                        System.out.println(type);
@@ -331,6 +325,28 @@ public class DecodeThread extends Thread {
                             }
                             sendStringList(list, src, Config.TYPE_COMMAND_REPLY);
                         } else if (type == Config.TYPE_COMMAND_RETR) {
+                            InputStream remoteInput;
+                            try {
+                                remoteInput = ftpClient.retrieveFileStream(content);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            sendString(ftpClient.getReplyString(), src, Config.TYPE_COMMAND_REPLY);
+                            var byteArrayOutputStream = new ByteArrayOutputStream();
+                            int _byte;
+                            while (true) {
+                                try {
+                                    if ((_byte = remoteInput.read()) == -1) break;
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                byteArrayOutputStream.write(_byte);
+                            }
+
+                            byte[] bytes_ = byteArrayOutputStream.toByteArray();
+                            String filePath = "./src/file.bin";
+                            Util.writeFileByBytes(bytes_, filePath);
+                            sendFile(filePath, src, Config.TYPE_DATA);
 
                         } else if (type == Config.TYPE_COMMAND_REPLY) {
                             System.out.println(content);
@@ -352,7 +368,7 @@ public class DecodeThread extends Thread {
 
     private void sendString(String str, int dest, int type){
         // send commands
-        sender = new SW_Sender("",
+        sender = new SW_Sender(null,
                 10,
                 audioHw,
                 50,
@@ -374,7 +390,7 @@ public class DecodeThread extends Thread {
         List<String> strList = Arrays.asList(str);
         strList.add("\n");
         // send commands
-        sender = new SW_Sender("",
+        sender = new SW_Sender(null,
                 10,
                 audioHw,
                 50,
@@ -388,6 +404,26 @@ public class DecodeThread extends Thread {
                 Config.node3_Port,
                 Config.node1_Port,
                 strList);
+
+        sender.sendFrame();
+    }
+
+    private void sendFile(String filePath, int dest, int type){
+        // send commands
+        sender = new SW_Sender(filePath,
+                10,
+                audioHw,
+                50,
+                300,
+                dest,
+                node_id,
+                type,
+                false,
+                Config.node3_IP,
+                Config.node1_IP,
+                Config.node3_Port,
+                Config.node1_Port,
+                null);
 
         sender.sendFrame();
     }
