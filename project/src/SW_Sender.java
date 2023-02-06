@@ -46,9 +46,6 @@ public class SW_Sender {
         frame_num = 0;
         track_list = new ArrayList<>();
         for (byte[] lineData: file_data){
-            if(lineData.length == 0){
-                continue;
-            }
             ArrayList<Integer> data = (ArrayList<Integer>) Arrays.stream(Util.bytesToBits(lineData)).boxed().collect(Collectors.toList());
             track_list.add(frameToTrack(data, _dest, _src, type, frame_num++, false,
                     Util.ipToLong(destIP), Util.ipToLong(srcIP), destPort, srcPort, data.size()));

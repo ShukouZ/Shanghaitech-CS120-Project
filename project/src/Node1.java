@@ -14,27 +14,39 @@ public class Node1 {
         String s = in.nextLine().strip();
         int type=-1;
         String command, content;
-        while (!s.equals("bye")){
+        while (!s.equals("bye")) {
             command = s.split(" ")[0];
-            content = s.split(" ")[1];
-//            command = COMMAND_FIX(command);
-            if(command.equals("USER")){
-                type = Config.TYPE_COMMAND_USER;
-            }else if(command.equals("PASS")){
-                type = Config.TYPE_COMMAND_PASS;
-            }else if(command.equals("PWD")){
-                type = Config.TYPE_COMMAND_PWD;
-            }else if(command.equals("CWD")){
-                type = Config.TYPE_COMMAND_CWD;
-            }else if(command.equals("PASV")){
-                type = Config.TYPE_COMMAND_PASV;
-            }else if(command.equals("LIST")){
-                type = Config.TYPE_COMMAND_LIST;
-            }else if(command.equals("RETR")){
-                type = Config.TYPE_COMMAND_RETR;
-            }else {
-//                ERROR FIX;
-                continue;
+            command = CommandFix.command_fix(command);
+            content = "";
+            switch (command) {
+                case "USER":
+                    type = Config.TYPE_COMMAND_USER;
+                    content = s.split(" ")[1];
+                    break;
+                case "PASS":
+                    type = Config.TYPE_COMMAND_PASS;
+                    content = s.split(" ")[1];
+                    break;
+                case "PWD":
+                    type = Config.TYPE_COMMAND_PWD;
+                    break;
+                case "CWD":
+                    type = Config.TYPE_COMMAND_CWD;
+                    content = s.split(" ")[1];
+                    break;
+                case "PASV":
+                    type = Config.TYPE_COMMAND_PASV;
+                    break;
+                case "LIST":
+                    type = Config.TYPE_COMMAND_LIST;
+                    break;
+                case "RETR":
+                    type = Config.TYPE_COMMAND_RETR;
+                    content = s.split(" ")[1];
+                    break;
+                default:
+                    s = in.nextLine().strip();
+                    continue;
             }
 
             // send commands
