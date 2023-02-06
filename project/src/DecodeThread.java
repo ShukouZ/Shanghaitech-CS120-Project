@@ -38,6 +38,9 @@ public class DecodeThread extends Thread {
 
     }
 
+    public void updateSender(SW_Sender new_sender){
+        sender = new_sender;
+    }
     public static void sendACK(int dest, int src, int type, int id){
         float[] track = SW_Sender.frameToTrack(null, dest, src, type, id, true, 0, 0, 0, 0, 0);
         audioHw.PHYSend(track);

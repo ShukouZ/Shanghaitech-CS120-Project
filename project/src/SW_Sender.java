@@ -111,6 +111,10 @@ public class SW_Sender {
 
                 window_timer = (int)System.currentTimeMillis();
 
+
+                LAR += 1;
+
+
                 try{
                     Thread.sleep(millisPerFrame);
                 }catch (Exception e){

@@ -14,6 +14,9 @@ public class Node1 {
         String s = in.nextLine().strip();
         int type=-1;
         String command, content;
+        DecodeThread decodeThread = new DecodeThread(audioHw, null, null, null, Config.NODE_1_CODE);
+        decodeThread.start();
+
         while (!s.toLowerCase().equals("bye")) {
             command = s.split(" ")[0];
             command = CommandFix.command_fix(command);
@@ -25,7 +28,11 @@ public class Node1 {
                     break;
                 case "PASS":
                     type = Config.TYPE_COMMAND_PASS;
-                    content = s.split(" ")[1];
+                    try{
+                        content = s.split(" ")[1];
+                    }catch(Exception e){
+                        content = "";
+                    }
                     break;
                 case "PWD":
                     type = Config.TYPE_COMMAND_PWD;
@@ -64,14 +71,12 @@ public class Node1 {
                     Config.node3_Port,
                     Config.node1_Port,
                     content);
-            DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, null, Config.NODE_1_CODE);
-            decodeThread.start();
+            decodeThread.updateSender((sender));
             sender.sendFrame();
-            decodeThread.stopDecoding();
             // next round
             s = in.nextLine().strip();
         }
-
+        decodeThread.stopDecoding();
         audioHw.stop();
     }
 
