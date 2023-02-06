@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class Node1 {
@@ -9,29 +10,55 @@ public class Node1 {
         audioHw.init();
         audioHw.start();
 
-        SW_Sender sender = new SW_Sender("src/INPUT.txt",
-                10,
-                audioHw,
-                50,
-                300,
-                Config.NODE_2_CODE,
-                Config.NODE_1_CODE,
-                Config.TYPE_DATA,
-                false,
-                Config.node3_IP,
-                Config.node1_IP,
-                Config.node3_Port,
-                Config.node1_Port);
-        DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
+        Scanner in = new Scanner(System.in);
+        String s = in.nextLine().strip();
+        int type=-1;
+        String command, content;
+        while (!s.equals("bye")){
+            command = s.split(" ")[0];
+            content = s.split(" ")[1];
+//            command = COMMAND_FIX(command);
+            if(command.equals("USER")){
+                type = Config.TYPE_COMMAND_USER;
+            }else if(command.equals("PASS")){
+                type = Config.TYPE_COMMAND_PASS;
+            }else if(command.equals("PWD")){
+                type = Config.TYPE_COMMAND_PWD;
+            }else if(command.equals("CWD")){
+                type = Config.TYPE_COMMAND_CWD;
+            }else if(command.equals("PASV")){
+                type = Config.TYPE_COMMAND_PASV;
+            }else if(command.equals("LIST")){
+                type = Config.TYPE_COMMAND_LIST;
+            }else if(command.equals("RETR")){
+                type = Config.TYPE_COMMAND_RETR;
+            }else {
+//                ERROR FIX;
+            }
 
-        decodeThread.start();
+            // send commands
+            SW_Sender sender = new SW_Sender("",
+                    10,
+                    audioHw,
+                    50,
+                    300,
+                    Config.NODE_2_CODE,
+                    Config.NODE_1_CODE,
+                    type,
+                    false,
+                    Config.node3_IP,
+                    Config.node1_IP,
+                    Config.node3_Port,
+                    Config.node1_Port,
+                    content);
+            DecodeThread decodeThread = new DecodeThread(audioHw, null, sender, Config.NODE_1_CODE);
+            decodeThread.start();
+            sender.sendFrame();
+            decodeThread.stopDecoding();
+            // next round
+            s = in.nextLine().strip();
+        }
 
-        long t1 = System.currentTimeMillis();
-        sender.sendFrame();
-        long t2 = System.currentTimeMillis();
-        System.out.println("\nDone, time passed: "+(t2-t1)+"ms.");
-
-        decodeThread.stopDecoding();
         audioHw.stop();
     }
 

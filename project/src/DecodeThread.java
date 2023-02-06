@@ -341,6 +341,27 @@ public class DecodeThread extends Thread {
                         System.out.println("Payload:"+ new String(bytes, 2, bytes.length - 2));
                         System.out.println("Latency:"+(current_time-icmp_time));
                     }
+                    else {
+                        System.out.println(type);
+                        System.out.println();
+
+                        // transfer data(int) to data(bytes)
+                        StringBuilder output = new StringBuilder();
+                        for (int datum: decoded_block_data.subList(UDPStart, headSum+validDataLen)){
+                            output.append(datum);
+                        }
+                        byte[] bytes = new byte[output.length() / 8];
+                        for (int i = 0; i < output.length() / 8; i++) {
+                            // System.out.print(bitStr+"|");
+                            bytes[i] = Util.BitToByte(output.substring(i*8,(i+1)*8));
+                        }
+
+                        System.out.println(new String(bytes, 14, bytes.length - 14));
+                        System.out.println("--------------------------------------------------------------");
+                        System.out.println();
+
+
+                    }
                 }
 
             }

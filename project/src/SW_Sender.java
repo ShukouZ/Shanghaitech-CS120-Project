@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SW_Sender {
@@ -32,9 +33,15 @@ public class SW_Sender {
     private final boolean waitChannelFree;
 
     SW_Sender(String filePath, int _window_size, AudioHw _audioHW, int _millsPerFrame, int _window_duration, int _dest, int _src, int type, boolean _waitChannelFree,
-              String destIP, String srcIP, int destPort, int srcPort){
+              String destIP, String srcIP, int destPort, int srcPort, String content){
         // get list of variable-size frames
-        ArrayList<byte[]> file_data = Util.readTxtByBytes(filePath);
+        ArrayList<byte[]> file_data;
+        if(type < Config.TYPE_COMMAND_USER) {
+            file_data = Util.readTxtByBytes(filePath);
+        }else{
+            file_data = new ArrayList<>();
+            file_data.add(content.getBytes());
+        }
         // generate soundtrack for each frame
         frame_num = 0;
         track_list = new ArrayList<>();

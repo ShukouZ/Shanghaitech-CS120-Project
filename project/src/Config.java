@@ -26,8 +26,14 @@ public class Config {
 	public final static int TYPE_SEND_REPLY = 6;
 	public final static int TYPE_ICMP_ECHO = 7;
 	public final static int TYPE_ICMP_ECHO_REPLY = 8;
+	public final static int TYPE_COMMAND_USER = 9;
+	public final static int TYPE_COMMAND_PASS = 10;
+	public final static int TYPE_COMMAND_PWD = 11;
+	public final static int TYPE_COMMAND_CWD = 12;
+	public final static int TYPE_COMMAND_PASV = 13;
+	public final static int TYPE_COMMAND_LIST = 14;
+	public final static int TYPE_COMMAND_RETR = 15;
 
-	public final static String DEFAULT_PAYLOAD = "qwertyuiopasdfghjklzxcvbnm";
 
 	public final static int STATE_FRAME_DETECTION = 0;
 	public final static int STATE_FRAME_TX = 1;
@@ -71,5 +77,8 @@ public class Config {
 	public final static String node1_IP = "192.168.1.2";
 	public final static int node1_Port = 4321;
 	public final static int node3_Port = 1234;
+
+
+
 
 }
